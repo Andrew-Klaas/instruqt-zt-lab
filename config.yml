@@ -1,0 +1,45 @@
+version: "2"
+virtualmachines:
+- name: hashistack-server
+  image: instruqt-hashicorp/ubuntu-base
+  shell: /bin/bash -l
+  environment:
+    CONSUL_HTTP_ADDR: hashistack-server:8500
+    VAULT_ADDR: http://127.0.0.1:8200/
+    BOUNDARY_ADDR: http://127.0.0.1:9200/
+  machine_type: n1-standard-1
+- name: hashistack-client-1
+  image: instruqt-hashicorp/ubuntu-base 
+  shell: /bin/bash -l
+  environment:
+    CONSUL_HTTP_ADDR: hashistack-client-1:8500
+    VAULT_ADDR: http://active.vault.service.consul:8200/
+  machine_type: n1-standard-1
+- name: hashistack-client-2
+  image: instruqt-hashicorp/ubuntu-base 
+  shell: /bin/bash -l
+  environment:
+    CONSUL_HTTP_ADDR: hashistack-client-2:8500
+    VAULT_ADDR: http://active.vault.service.consul:8200/
+  machine_type: n1-standard-1
+aws_accounts:
+- name: vault-dynamic-secrets-aws
+  iam_policy: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ec2:DescribeInstances",
+            "iam:GetInstanceProfile",
+            "iam:GetUser",
+            "iam:GetRole"
+          ],
+          "Resource": "*"
+        }
+      ]
+    }
+  managed_policies:
+  - arn:aws:iam::aws:policy/IAMFullAccess
+  - arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess

@@ -1,0 +1,27 @@
+slug: klaas-zt-sandbox
+id: mjhgbj3a3yyb
+version: 0.0.1
+type: track
+title: Klaas ZT sandbox
+teaser: Leverage the HashiCorp stack to secure application infrastructure (ZT)
+description: Description placeholder (ZT)
+icon: ""
+tags: []
+owner: hashicorp
+developers:
+- aklaas@hashicorp.com
+private: true
+published: false
+challenges:
+- slug: getting-familiar-with-the-environment
+  id: oj6ydqgrfeob
+  type: challenge
+  title: Getting familiar with the environment
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  difficulty: basic
+  timelimit: 600
+checksum: "4893985826029717698"
