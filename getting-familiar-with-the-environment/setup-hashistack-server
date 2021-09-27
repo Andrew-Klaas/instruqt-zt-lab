@@ -1,0 +1,55 @@
+#!/bin/bash
+set -e
+
+VAULT_VERSION=1.7.4
+TERRAFORM_VERSION=1.0.7
+CONSUL_VERSION=1.10.2
+BOUNDARY_VERSION=0.6.1
+
+# Install Vault
+curl -fsSL -o /tmp/vault.zip https://releases.hashicorp.com/vault/${VAULT_VERSION}+ent/vault_${VAULT_VERSION}+ent_linux_amd64.zip
+unzip -o -d /usr/local/bin/ /tmp/vault.zip
+
+# Install Terraform
+curl -fsSL -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+unzip -o -d /usr/local/bin/ /tmp/terraform.zip
+
+# Install Consul
+curl -fsSL -o /tmp/consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
+unzip -o -d /usr/local/bin/ /tmp/consul.zip
+
+# Install Boundary
+curl -fsSL -o /tmp/boundary.zip https://releases.hashicorp.com/boundary/${BOUNDARY_VERSION}/boundary_${BOUNDARY_VERSION}_linux_amd64.zip
+unzip -o -d /usr/local/bin/ /tmp/boundary.zip
+
+cd /tmp
+git clone https://github.com/Andrew-Klaas/instruqt-zt-lab.git
+
+# Copy additional files.
+cp instruqt-zt-lab/assets/systemd-files/envoy /usr/local/bin/envoy
+cp instruqt-zt-lab/assets/systemd-files/consul.service /etc/systemd/system/consul.service
+cp instruqt-zt-lab/assets/systemd-files/vault.service /etc/systemd/system/vault.service
+cp instruqt-zt-lab/assets/systemd-files/boundary-controller.service /etc/systemd/system/boundary-controller.service
+cp instruqt-zt-lab/assets/systemd-files/boundary-worker.service /etc/systemd/system/boundary-worker.service
+
+mkdir /etc/consul.d
+mkdir /etc/vault.d
+mkdir /etc/boundary.d
+
+systemctl daemon-reload
+systemctl enable consul.service
+systemctl enable vault.service
+systemctl enable boundary-controller.service
+systemctl enable boundary-worker.service
+
+#Vault Server
+
+
+#Consul Server
+
+
+#Boundary Server
+
+
+
+

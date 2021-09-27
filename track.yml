@@ -22,6 +22,22 @@ challenges:
   - type: text
     contents: First challenge placeholder text
   assignment: first assignment placeholder text
+  tabs:
+  - title: Terminal
+    type: terminal
+    hostname: hashistack-server
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
   difficulty: basic
   timelimit: 600
-checksum: "4893985826029717698"
+checksum: "14941193972430023556"
