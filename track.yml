@@ -23,7 +23,7 @@ challenges:
     contents: First challenge placeholder text
   assignment: first assignment placeholder text
   tabs:
-  - title: Terminal
+  - title: Server
     type: terminal
     hostname: hashistack-server
   - title: Vault UI
@@ -38,6 +38,12 @@ challenges:
     type: service
     hostname: hashistack-server
     port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
   difficulty: basic
   timelimit: 600
-checksum: "14941193972430023556"
+checksum: "8528311813530429689"

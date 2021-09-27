@@ -42,13 +42,54 @@ systemctl enable vault.service
 systemctl enable boundary-controller.service
 systemctl enable boundary-worker.service
 
-#Vault Server
+
+#Configure Vault Server
+mkdir /tmp/vault
+mkdir /etc/vault.d
+cat << EOF > /etc/vault.d/vault.hcl
+storage "file" {
+  path = "/tmp/vault/data"
+}
+
+listener "tcp" {
+  address     = "127.0.0.1:8200"
+  tls_disable = 1
+}
+EOF
+
+systemctl start vault
+
+export VAULT_ADDR="http://127.0.0.1:8200"
+curl \
+  --silent \
+  --request PUT \
+  --data '{"secret_shares": 1, "secret_threshold": 1}' \
+  ${VAULT_ADDR}/v1/sys/init | tee \
+  >(jq -r '.root_token' > /tmp/root-token) \
+  >(jq -r '.keys[0]' > /tmp/unseal-key)
+
+vault operator unseal $(cat  /tmp/unseal-key)
+export ROOT_TOKEN=$(cat /tmp/root-token)
+vault login $ROOT_TOKEN
+
+#Create admin user
+echo '
+path "*" {
+    capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}' | vault policy write vault_admin -
+vault auth enable userpass
+vault write auth/userpass/users/vault password=vault policies=vault_admin
+
+vault secrets enable transform
+vault write transform/role/vault_go_demo transformations=ssn
+vault write transform/transformations/tokenization/ssn \
+    allowed_roles=vault_go_demo \
+    max_ttl=24h
 
 
-#Consul Server
+#Configure Consul Server
 
-
-#Boundary Server
+#Configure Boundary Server
 
 
 
