@@ -109,8 +109,9 @@ EOF
 
 systemctl start vault
 
-vault operator init -key-shares=1  -key-threshold=1 --format json >> init.txt
+sleep 5s
 
+vault operator init -key-shares=1  -key-threshold=1 --format json >> init.txt
 ROOT_TOKEN=$(cat init.txt | jq -r .root_token)
 UNSEAL_KEY=$(cat init.txt | jq -r .unseal_keys_b64[0])
 
@@ -136,6 +137,9 @@ echo "Vault install complete" >> /tmp/install.log
 ####################################
 # Configure Boundary Server
 ####################################
+
+
+
 
 
 
