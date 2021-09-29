@@ -45,5 +45,5 @@ challenges:
     type: terminal
     hostname: hashistack-client-2
   difficulty: basic
-  timelimit: 600
-checksum: "8528311813530429689"
+  timelimit: 60000
+checksum: "9334619485659161854"

@@ -1,5 +1,12 @@
 #!/bin/bash
 set -e
+set -v
+
+until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]
+do
+    sleep 1
+done
+echo "source /usr/share/bash-completion/bash_completion" >> /root/.bashrc
 
 VAULT_VERSION=1.7.4
 TERRAFORM_VERSION=1.0.7
@@ -35,6 +42,9 @@ cp instruqt-zt-lab/assets/systemd-files/boundary-worker.service /etc/systemd/sys
 mkdir /etc/consul.d
 mkdir /etc/vault.d
 mkdir /etc/boundary.d
+mkdir /tmp/consul
+mkdir /tmp/vault
+mkdir /tmp/boundary
 
 systemctl daemon-reload
 systemctl enable consul.service
@@ -42,34 +52,69 @@ systemctl enable vault.service
 systemctl enable boundary-controller.service
 systemctl enable boundary-worker.service
 
+####################################
+# Configure Consul Server
+####################################
+HOST_IP_ADDR=$(ifconfig ens4 | grep "inet " | awk '{ print$2 }')
+cat << EOF > /etc/consul.d/consul.hcl
+datacenter = "dc1"
+data_dir = "/tmp/consul"
+server = true
+log_level = "INFO"
+node_name = "server"
+bootstrap_expect = 1
+client_addr = "$HOST_IP_ADDR"
+bind_addr = "$HOST_IP_ADDR"
+ui = true
+connect {
+  enabled = true
+}
+EOF
 
-#Configure Vault Server
-mkdir /tmp/vault
-mkdir /etc/vault.d
+apt update -y 
+apt install -y dnsmasq
+sed -i '1i nameserver 127.0.0.1\n' /etc/resolv.conf
+bash -c "cat >/etc/dnsmasq.d/10-consul" << EOF
+server=/consul/$HOST_IP_ADDR#8600
+EOF
+
+systemctl start consul
+systemctl enable dnsmasq
+systemctl start dnsmasq
+sleep 10s
+systemctl stop systemd-resolved
+systemctl restart dnsmasq
+
+
+echo "Consul install complete" >> /tmp/install.log
+
+####################################
+# Configure Vault Server
+####################################
 cat << EOF > /etc/vault.d/vault.hcl
 storage "file" {
   path = "/tmp/vault/data"
 }
-
 listener "tcp" {
-  address     = "127.0.0.1:8200"
+  address     = "0.0.0.0:8200"
   tls_disable = 1
 }
+# service_registration "consul" {
+#   address = "$HOST_IP_ADDR:8500"
+# }
+api_addr = "http://$HOST_IP_ADDR:8200"
+cluster_addr = "https://$HOST_IP_ADDR:8201"
+ui = true
 EOF
 
 systemctl start vault
 
-export VAULT_ADDR="http://127.0.0.1:8200"
-curl \
-  --silent \
-  --request PUT \
-  --data '{"secret_shares": 1, "secret_threshold": 1}' \
-  ${VAULT_ADDR}/v1/sys/init | tee \
-  >(jq -r '.root_token' > /tmp/root-token) \
-  >(jq -r '.keys[0]' > /tmp/unseal-key)
+vault operator init -key-shares=1  -key-threshold=1 --format json >> init.txt
 
-vault operator unseal $(cat  /tmp/unseal-key)
-export ROOT_TOKEN=$(cat /tmp/root-token)
+ROOT_TOKEN=$(cat init.txt | jq -r .root_token)
+UNSEAL_KEY=$(cat init.txt | jq -r .unseal_keys_b64[0])
+
+vault operator unseal $UNSEAL_KEY
 vault login $ROOT_TOKEN
 
 #Create admin user
@@ -86,11 +131,11 @@ vault write transform/transformations/tokenization/ssn \
     allowed_roles=vault_go_demo \
     max_ttl=24h
 
+echo "Vault install complete" >> /tmp/install.log
 
-#Configure Consul Server
-
-#Configure Boundary Server
-
+####################################
+# Configure Boundary Server
+####################################
 
 
 
