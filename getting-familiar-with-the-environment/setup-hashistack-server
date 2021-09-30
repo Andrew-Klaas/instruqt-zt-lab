@@ -38,6 +38,7 @@ cp instruqt-zt-lab/assets/systemd-files/consul.service /etc/systemd/system/consu
 cp instruqt-zt-lab/assets/systemd-files/vault.service /etc/systemd/system/vault.service
 cp instruqt-zt-lab/assets/systemd-files/boundary-controller.service /etc/systemd/system/boundary-controller.service
 cp instruqt-zt-lab/assets/systemd-files/boundary-worker.service /etc/systemd/system/boundary-worker.service
+cp instruqt-zt-lab/assets/systemd-files/boundary.service /etc/systemd/system/boundary.service
 
 mkdir /etc/consul.d
 mkdir /etc/vault.d
@@ -80,9 +81,8 @@ EOF
 
 systemctl start consul
 systemctl enable dnsmasq
-systemctl start dnsmasq
 sleep 10s
-systemctl stop systemd-resolved
+systemctl restart systemd-resolved
 systemctl restart dnsmasq
 
 
@@ -138,6 +138,60 @@ echo "Vault install complete" >> /tmp/install.log
 # Configure Boundary Server
 ####################################
 
+
+
+cat << EOF > /etc/boundary.d/boundary.hcl
+disable_mlock = true
+controller {
+  # This name attr must be unique across all controller instances if running in HA mode
+  name = "demo-controller-1"
+  description = "A controller for a demo!"
+  # Database URL for postgres. This can be a direct "postgres://"
+  # URL, or it can be "file://" to read the contents of a file to
+  # supply the url, or "env://" to name an environment variable
+  # that contains the URL.
+  database {
+      url = "postgresql://boundary:boundarydemo@postgres.yourdomain.com:5432/boundary"
+  }
+}
+# API listener configuration block
+listener "tcp" {
+  # Should be the address of the NIC that the controller server will be reached on
+  address = "10.0.0.1"
+  # The purpose of this listener block
+  purpose = "api"
+  tls_disable = false
+  # Uncomment to enable CORS for the Admin UI. Be sure to set the allowed origin(s)
+  # to appropriate values.
+  #cors_enabled = true
+  #cors_allowed_origins = ["https://yourcorp.yourdomain.com", "serve://boundary"]
+}
+# Data-plane listener configuration block (used for worker coordination)
+listener "tcp" {
+  # Should be the IP of the NIC that the worker will connect on
+  address = "10.0.0.1"
+  # The purpose of this listener
+  purpose = "cluster"
+}
+kms "aead" {
+  purpose = "root"
+  aead_type = "aes-gcm"
+  key = "sP1fnF5Xz85RrXyELHFeZg9Ad2qt4Z4bgNHVGtD6ung="
+  key_id = "global_root"
+}
+kms "aead" {
+  purpose = "worker-auth"
+  aead_type = "aes-gcm"
+  key = "8fZBjCUfN0TzjEGLQldGY4+iE9AkOvCfjh7+p0GtRBQ="
+  key_id = "global_worker-auth"
+}
+kms "aead" {
+  purpose = "recovery"
+  aead_type = "aes-gcm"
+  key = "8fZBjCUfN0TzjEGLQldGY4+iE9AkOvCfjh7+p0GtRBQ="
+  key_id = "global_recovery"
+}
+EOF
 
 
 
