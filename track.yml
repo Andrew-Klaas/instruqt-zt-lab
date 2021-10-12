@@ -44,6 +44,11 @@ challenges:
   - title: Client 2
     type: terminal
     hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 60000
-checksum: "15694960357064409036"
+checksum: "9709751732938147646"
+_: ""

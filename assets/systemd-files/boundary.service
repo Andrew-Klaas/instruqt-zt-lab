@@ -3,6 +3,7 @@ Description=Boundary Controller
 Documentation=https://www.boundaryproject.io/docs
 
 [Service]
+Environment="BOUNDARY_UI=true"
 ExecStart=/usr/local/bin/boundary dev
 User=root
 LimitMEMLOCK=infinity

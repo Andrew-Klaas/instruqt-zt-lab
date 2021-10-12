@@ -31,7 +31,6 @@ variable "backend_server_ips" {
   default = [
     "hashistack-client-1",
     "hashistack-client-2",
-    "hashistack-server",
   ]
 }
 
