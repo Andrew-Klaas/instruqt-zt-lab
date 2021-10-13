@@ -3,7 +3,10 @@ Description=Consul
 Documentation=https://consul.io/docs/
 
 [Service]
-TimeoutStartSec=0
+ExecReload=/bin/kill --signal HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5
 ExecStart=/usr/local/bin/consul agent -config-dir=/etc/consul.d
 
 [Install]

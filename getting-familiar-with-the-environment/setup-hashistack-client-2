@@ -55,6 +55,9 @@ ui = true
 connect {
   enabled = true
 }
+ports {
+  grpc = 8502
+}
 EOF
 
 apt update -y 
@@ -75,3 +78,41 @@ echo "Consul install complete" >> /tmp/install.log
 ####################################
 # Configure PostgreSQL
 ####################################
+
+sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+apt-get -y update
+sudo apt-get -y install postgresql
+systemctl start postgresql
+
+sudo -u postgres psql << EOF
+ALTER USER postgres PASSWORD 'password';
+CREATE DATABASE vault_go_demo;
+EOF
+
+###################################
+# PostgreSQL Consul / Envoy 
+###################################
+sudo cat << EOF > /etc/consul.d/postgres.hcl 
+service {
+  name = "postgres"
+  tags = [ "postgres" ]
+  port = 5432
+  connect {
+    sidecar_service {
+      proxy {
+        config {
+          protocol = "tcp"
+        }
+      }
+    }
+  }
+}
+EOF
+
+sudo service consul restart
+
+sleep 5s
+
+nohup consul connect envoy --sidecar-for postgres &
+

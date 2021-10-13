@@ -55,6 +55,9 @@ ui = true
 connect {
   enabled = true
 }
+ports {
+  grpc = 8502
+}
 EOF
 
 apt update -y 
