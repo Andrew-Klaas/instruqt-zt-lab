@@ -178,6 +178,7 @@ while [ "${db_service_avail}" == "null" ] ; do
   sleep 5
   db_service_avail=$(curl --silent "http://hashistack-server:8500/v1/catalog/services/postgres" | jq -r '.postgres')
 done
+echo "done"
 
 vault secrets enable database
 
