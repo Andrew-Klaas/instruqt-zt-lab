@@ -29,7 +29,6 @@ variable "readonly_users" {
 variable "backend_server_ips" {
   type    = set(string)
   default = [
-    "hashistack-client-1",
     "hashistack-client-2",
   ]
 }
@@ -155,6 +154,19 @@ resource "boundary_target" "backend_servers_ssh" {
   description  = "Backend SSH target"
   scope_id     = boundary_scope.core_infra.id
   default_port = "22"
+
+  host_set_ids = [
+    boundary_host_set.backend_servers_ssh.id
+  ]
+}
+
+# create target for accessing backend servers on port :22
+resource "boundary_target" "backend_servers_postgres" {
+  type         = "tcp"
+  name         = "postgres_server"
+  description  = "Backend postgres target"
+  scope_id     = boundary_scope.core_infra.id
+  default_port = "5432"
 
   host_set_ids = [
     boundary_host_set.backend_servers_ssh.id

@@ -52,11 +52,11 @@ node_name = "hashistack-client-2"
 client_addr = "$HOST_IP_ADDR"
 bind_addr = "$HOST_IP_ADDR"
 ui = true
-connect {
-  enabled = true
-}
 ports {
   grpc = 8502
+}
+connect {
+  enabled = true
 }
 EOF
 
@@ -83,6 +83,13 @@ sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 apt-get -y update
 sudo apt-get -y install postgresql
+sudo cat << EOF > /etc/postgresql/14/main/conf.d/postgresql.conf
+listen_addresses '*'
+EOF
+sudo echo "
+host    all             all              0.0.0.0/0                       md5
+host    all             all              ::/0                            md5
+" >> /etc/postgresql/14/main/pg_hba.conf
 systemctl start postgresql
 
 sudo -u postgres psql << EOF
@@ -107,6 +114,11 @@ service {
       }
     }
   }
+  check {
+    id       = "postgresql-check"
+    tcp      = "127.0.0.1:5432"
+    interval = "10s"
+  }
 }
 EOF
 
@@ -114,5 +126,5 @@ sudo service consul restart
 
 sleep 5s
 
-nohup consul connect envoy --sidecar-for postgres &
+nohup consul connect envoy --sidecar-for postgres nohup.out 2> nohup.err < /dev/null & disown
 

@@ -69,11 +69,11 @@ bootstrap_expect = 1
 client_addr = "$HOST_IP_ADDR"
 bind_addr = "$HOST_IP_ADDR"
 ui = true
-connect {
-  enabled = true
-}
 ports {
   grpc = 8502
+}
+connect {
+  enabled = true
 }
 EOF
 
@@ -137,6 +137,64 @@ vault write transform/transformations/tokenization/ssn \
     allowed_roles=vault_go_demo \
     max_ttl=24h
 
+cat << EOF > go-app.policy
+path "transform/*" {
+    capabilities = ["read", "list", "create", "update", "delete"]
+}
+EOF
+vault policy write go-app go-app.policy
+
+
+# echo $INSTRUQT_AWS_ACCOUNTS
+export AWS_ACCESS_KEY_ID=$INSTRUQT_AWS_ACCOUNT_VAULT_DYNAMIC_SECRETS_AWS_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$INSTRUQT_AWS_ACCOUNT_VAULT_DYNAMIC_SECRETS_AWS_AWS_SECRET_ACCESS_KEY
+export AWS_ACCOUNT_NAME=$INSTRUQT_AWS_ACCOUNT_VAULT_DYNAMIC_SECRETS_AWS_ACCOUNT_NAME
+export AWS_ACCOUNT_ID=$INSTRUQT_AWS_ACCOUNT_VAULT_DYNAMIC_SECRETS_AWS_ACCOUNT_ID
+export AWS_ACCOUNT_USERNAME=$INSTRUQT_AWS_ACCOUNT_VAULT_DYNAMIC_SECRETS_AWS_USERNAME
+export AWS_ACCOUNT_PASSWORD=$INSTRUQT_AWS_ACCOUNT_VAULT_DYNAMIC_SECRETS_AWS_PASSWORD
+
+vault auth enable aws
+
+# Configure Vault to communicate with the AWS account
+vault write auth/aws/config/client \
+    access_key=$AWS_ACCESS_KEY_ID \
+    secret_key=$AWS_SECRET_ACCESS_KEY
+
+# Register a role in the method
+vault write auth/aws/role/my-role-iam \
+    auth_type=iam \
+    bound_iam_principal_arn=arn:aws:iam::$AWS_ACCOUNT_ID:* \
+    policies=go-app \
+    token_ttl=30m \
+    token_max_ttl=30m
+
+# Set the IAM Server ID Expected Header Value
+#vault write auth/aws/config/client \
+#    iam_server_id_header_value=instruqt.vault.example.com
+
+db_service_avail="null"
+while [ "${db_service_avail}" == "null" ] ; do
+  echo "Waiting for postgres to be available"
+  sleep 5
+  db_service_avail=$(curl --silent "http://hashistack-server:8500/v1/catalog/services/postgres" | jq -r '.postgres')
+done
+
+vault secrets enable database
+
+vault write database/config/my-postgresql-database \
+plugin_name=postgresql-database-plugin \
+allowed_roles="my-role, vault_go_demo" \
+connection_url="postgresql://{{username}}:{{password}}@hashistack-client-2:5432/vault_go_demo?sslmode=disable" \
+username="postgres" \
+password="password"
+
+vault write database/roles/vault_go_demo \
+db_name=my-postgresql-database \
+creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
+ALTER USER \"{{name}}\" WITH SUPERUSER;" \
+default_ttl="1h" \
+max_ttl="24h"
+
 echo "Vault install complete" >> /tmp/install.log
 
 ####################################
@@ -145,3 +203,9 @@ echo "Vault install complete" >> /tmp/install.log
 
 #start Boundary in dev mode (Controller, worker, postgres container)
 systemctl start Boundary
+
+
+
+
+
+

@@ -52,11 +52,11 @@ node_name = "hashistack-client-1"
 client_addr = "$HOST_IP_ADDR"
 bind_addr = "$HOST_IP_ADDR"
 ui = true
-connect {
-  enabled = true
-}
 ports {
   grpc = 8502
+}
+connect {
+  enabled = true
 }
 EOF
 
@@ -76,5 +76,31 @@ systemctl restart dnsmasq
 echo "Consul install complete" >> /tmp/install.log
 
 ####################################
-# Configure PostgreSQL
+# Golang Application
 ####################################
+
+sudo cat << EOF > /etc/consul.d/goapp.hcl 
+service {
+  name = "goapp"
+  tags = [ "goapp" ]
+  port = 9090
+  connect {
+    sidecar_service {
+      proxy {
+        upstreams = [
+          {
+            destination_name = "counting"
+            local_bind_port  = 5000
+          }
+        ]
+      }
+    }
+  }
+}
+EOF
+
+sudo service consul restart
+
+sleep 5s
+
+nohup consul connect envoy --sidecar-for postgres nohup.out 2> nohup.err < /dev/null & disown
