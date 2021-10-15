@@ -8,21 +8,14 @@ provider "boundary" {
 variable "users" {
   type    = set(string)
   default = [
-    "Jim",
-    "Mike",
-    "Todd",
-    "Jeff",
-    "Randy",
-    "Susmitha"
+    "Jim"
   ]
 }
 
 variable "readonly_users" {
   type    = set(string)
   default = [
-    "Chris",
-    "Pete",
-    "Justin"
+    "Chris"
   ]
 }
 
@@ -140,20 +133,20 @@ resource "boundary_target" "backend_servers_ssh" {
   name         = "ssh_server"
   description  = "Backend SSH target"
   scope_id     = boundary_scope.core_infra.id
-  default_port = "22"
+  default_port = 22
 
   host_set_ids = [
     boundary_host_set.backend_servers_ssh.id
   ]
 }
 
-# create target for accessing backend servers on port :22
 resource "boundary_target" "backend_servers_postgres" {
   type         = "tcp"
   name         = "postgres_server"
   description  = "Backend postgres target"
   scope_id     = boundary_scope.core_infra.id
-  default_port = "5432"
+  default_port = 5432
+  session_connection_limit = -1
 
   host_set_ids = [
     boundary_host_set.backend_servers_ssh.id

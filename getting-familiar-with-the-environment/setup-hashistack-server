@@ -218,11 +218,12 @@ echo "Boundary install complete" >> /tmp/install.log
 
 exit 0
 
-# export BOUNDARY_ADDR="http://hashistack-server:9200"
+export BOUNDARY_ADDR="http://hashistack-server:9200"
+boundary authenticate password -auth-method-id=ampw_1234567890 -login-name=admin -password=password
 
-# 1. apply boundary-controller policy
+vault policy write boundary-controller boundary-controller-policy.hcl
 
-2. vault token create \
+vault token create \
   -no-default-policy=true \
   -policy="boundary-controller" \
   -policy="go-app" \
@@ -232,5 +233,4 @@ exit 0
 
 # psql --host hashistack-client-2 --port 5432 --user postgres --dbname vault_go_demo
 
-
-boundary dev -api-listen-address=hashistack-server:9200
+ # boundary scopes list -recursive
