@@ -1,5 +1,5 @@
 provider "boundary" {
-  addr                            = "http://127.0.0.1:9200"
+  addr                            = "http://hashistack-server:9200"
   auth_method_id                  = "ampw_1234567890"
   password_auth_method_login_name = "admin"
   password_auth_method_password   = "password"
@@ -132,19 +132,6 @@ resource "boundary_host_set" "backend_servers_ssh" {
   description     = "Host set for backend servers"
   host_catalog_id = boundary_host_catalog.backend_servers.id
   host_ids        = [for host in boundary_host.backend_servers : host.id]
-}
-
-# create target for accessing backend servers on port :8000
-resource "boundary_target" "backend_servers_service" {
-  type         = "tcp"
-  name         = "backend_server"
-  description  = "Backend service target"
-  scope_id     = boundary_scope.core_infra.id
-  default_port = "8080"
-
-  host_set_ids = [
-    boundary_host_set.backend_servers_ssh .id
-  ]
 }
 
 # create target for accessing backend servers on port :22

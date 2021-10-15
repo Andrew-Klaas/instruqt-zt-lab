@@ -141,6 +141,9 @@ cat << EOF > go-app.policy
 path "transform/*" {
     capabilities = ["read", "list", "create", "update", "delete"]
 }
+path "database/creds/vault_go_demo" {
+     capabilities = ["read"]
+}
 EOF
 vault policy write go-app go-app.policy
 
@@ -203,10 +206,31 @@ echo "Vault install complete" >> /tmp/install.log
 ####################################
 
 #start Boundary in dev mode (Controller, worker, postgres container)
-systemctl start Boundary
+systemctl start boundary
+
+#install psql
+sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+apt-get -y update
+sudo apt-get -y install postgresql
+
+echo "Boundary install complete" >> /tmp/install.log
+
+exit 0
+
+# export BOUNDARY_ADDR="http://hashistack-server:9200"
+
+# 1. apply boundary-controller policy
+
+2. vault token create \
+  -no-default-policy=true \
+  -policy="boundary-controller" \
+  -policy="go-app" \
+  -orphan=true \
+  -period=20m \
+  -renewable=true
+
+# psql --host hashistack-client-2 --port 5432 --user postgres --dbname vault_go_demo
 
 
-
-
-
-
+boundary dev -api-listen-address=hashistack-server:9200

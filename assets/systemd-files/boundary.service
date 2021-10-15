@@ -4,7 +4,7 @@ Documentation=https://www.boundaryproject.io/docs
 
 [Service]
 Environment="BOUNDARY_UI=true"
-ExecStart=/usr/local/bin/boundary dev
+ExecStart=/usr/local/bin/boundary dev -api-listen-address=hashistack-server:9200
 User=root
 LimitMEMLOCK=infinity
 Capabilities=CAP_IPC_LOCK+ep
