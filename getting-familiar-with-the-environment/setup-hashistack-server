@@ -234,3 +234,6 @@ vault token create \
 # psql --host hashistack-client-2 --port 5432 --user postgres --dbname vault_go_demo
 
  # boundary scopes list -recursive
+
+
+#ExecStart=/usr/local/bin/boundary dev -api-listen-address=hashistack-server:9200 -addr=http://hashistack-server:9200 -cluster-listen-address=hashistack-server:9201 -proxy-listen-address=hashistack-server:9202 -log-level=debug
