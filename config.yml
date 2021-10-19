@@ -4,7 +4,7 @@ virtualmachines:
   image: instruqt-hashicorp/ubuntu-base
   shell: /bin/bash -l
   environment:
-    BOUNDARY_ADDR: http://127.0.0.1:9200
+    BOUNDARY_ADDR: http://hashistack-server:9200
     CONSUL_HTTP_ADDR: hashistack-server:8500
     VAULT_ADDR: http://127.0.0.1:8200
   machine_type: n1-standard-1

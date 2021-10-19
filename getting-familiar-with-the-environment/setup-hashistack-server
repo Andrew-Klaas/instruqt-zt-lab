@@ -216,6 +216,9 @@ sudo apt-get -y install postgresql
 
 echo "Boundary install complete" >> /tmp/install.log
 
+apt-get install -y golang
+git clone https://github.com/Andrew-Klaas/aws-vault-go-demo-tokenization.git
+
 exit 0
 
 export BOUNDARY_ADDR="http://hashistack-server:9200"
