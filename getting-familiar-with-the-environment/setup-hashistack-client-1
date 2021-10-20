@@ -49,7 +49,7 @@ data_dir = "/tmp/consul"
 server = false
 log_level = "INFO"
 node_name = "hashistack-client-1"
-client_addr = "$HOST_IP_ADDR"
+client_addr = "$HOST_IP_ADDR 127.0.0.1"
 bind_addr = "$HOST_IP_ADDR"
 ui = true
 ports {
@@ -89,8 +89,8 @@ service {
       proxy {
         upstreams = [
           {
-            destination_name = "counting"
-            local_bind_port  = 5000
+            destination_name = "postgres"
+            local_bind_port  = 5432
           }
         ]
       }
@@ -99,8 +99,11 @@ service {
 }
 EOF
 
-sudo service consul restart
+sudo systemctl restart consul
 
 sleep 5s
 
-nohup consul connect envoy --sidecar-for postgres nohup.out 2> nohup.err < /dev/null & disown
+nohup consul connect envoy --sidecar-for goapp > nohup.out 2> nohup.err < /dev/null & disown
+
+apt-get install -y golang
+git clone https://github.com/Andrew-Klaas/aws-vault-go-demo-tokenization.git

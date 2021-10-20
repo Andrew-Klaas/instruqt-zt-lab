@@ -66,7 +66,7 @@ server = true
 log_level = "INFO"
 node_name = "hashistack-server"
 bootstrap_expect = 1
-client_addr = "$HOST_IP_ADDR"
+client_addr = "$HOST_IP_ADDR 127.0.0.1"
 bind_addr = "$HOST_IP_ADDR"
 ui = true
 ports {
@@ -236,7 +236,7 @@ vault token create \
 
 # psql --host hashistack-client-2 --port 5432 --user postgres --dbname vault_go_demo
 
- # boundary scopes list -recursive
+# boundary scopes list -recursive
 
 
 #ExecStart=/usr/local/bin/boundary dev -api-listen-address=hashistack-server:9200 -addr=http://hashistack-server:9200 -cluster-listen-address=hashistack-server:9201 -proxy-listen-address=hashistack-server:9202 -log-level=debug

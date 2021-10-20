@@ -26,6 +26,10 @@ challenges:
   - title: Server
     type: terminal
     hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
   - title: Vault UI
     type: service
     hostname: hashistack-server
@@ -50,4 +54,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 60000
-checksum: "6184418803839038260"
+checksum: "7446394031513867728"

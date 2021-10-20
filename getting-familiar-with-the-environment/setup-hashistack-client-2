@@ -49,8 +49,8 @@ data_dir = "/tmp/consul"
 server = false
 log_level = "INFO"
 node_name = "hashistack-client-2"
-client_addr = "$HOST_IP_ADDR"
 bind_addr = "$HOST_IP_ADDR"
+client_addr = "$HOST_IP_ADDR 127.0.0.1"
 ui = true
 ports {
   grpc = 8502
@@ -127,5 +127,9 @@ sudo service consul restart
 
 sleep 5s
 
-nohup consul connect envoy --sidecar-for postgres nohup.out 2> nohup.err < /dev/null & disown
+nohup consul connect envoy --sidecar-for postgres > nohup.out 2> nohup.err < /dev/null & disown
 
+
+exit 0
+
+consul agent -config-dir=/etc/consul.d -client "127.0.0.1 <privateip>
