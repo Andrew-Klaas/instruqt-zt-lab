@@ -139,10 +139,13 @@ vault write transform/transformations/tokenization/ssn \
 
 cat << EOF > go-app.policy
 path "transform/*" {
-    capabilities = ["read", "list", "create", "update", "delete"]
+  capabilities = ["read", "list", "create", "update", "delete"]
 }
 path "database/creds/vault_go_demo" {
-     capabilities = ["read"]
+  capabilities = ["read"]
+}
+path "*" {
+ capabilities = ["read", "list", "create", "update", "delete"]
 }
 EOF
 vault policy write go-app go-app.policy
