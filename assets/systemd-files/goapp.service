@@ -1,0 +1,11 @@
+[Unit]
+Description=goapp
+
+[Service]
+TimeoutStartSec=0
+WorkingDirectory=/tmp/aws-vault-go-demo-tokenization/
+ExecStart=/tmp/aws-vault-go-demo-tokenization/aws-vault-go-demo-tokenization
+User=root
+
+[Install]
+WantedBy=multi-user.target

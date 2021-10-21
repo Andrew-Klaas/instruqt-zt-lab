@@ -26,6 +26,7 @@ unzip -o -d /usr/local/bin/ /tmp/consul.zip
 
 cd /tmp
 git clone https://github.com/Andrew-Klaas/instruqt-zt-lab.git
+cp 
 
 # Copy additional files.
 ENVOY_VERSION="1.18.3"
@@ -36,6 +37,7 @@ mv envoy-v${ENVOY_VERSION}-linux-amd64/bin/envoy /usr/local/bin/envoy
 rm -rf envoy-v${ENVOY_VERSION}-linux-amd64.tar.xz envoy-v${ENVOY_VERSION}-linux-amd6
 
 cp instruqt-zt-lab/assets/systemd-files/consul.service /etc/systemd/system/consul.service
+cp instruqt-zt-lab/assets/systemd-files/goapp.service /etc/systemd/system/goapp.service
 
 mkdir /etc/consul.d
 mkdir /tmp/consul
@@ -110,3 +112,13 @@ nohup consul connect envoy --sidecar-for goapp > nohup.out 2> nohup.err < /dev/n
 
 apt-get install -y golang
 git clone https://github.com/Andrew-Klaas/aws-vault-go-demo-tokenization.git
+
+sudo mkdir -p /root/.aws
+sudo cat << EOF > /root/.aws/credentials
+[default]
+aws_access_key_id=$AWS_ACCESS_KEY_ID
+aws_secret_access_key=$AWS_SECRET_ACCESS_KEY
+EOF
+
+systemctl enable goapp.service
+systemctl start goapp
