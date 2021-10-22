@@ -169,6 +169,9 @@ resource "boundary_target" "backend_servers_postgres" {
   scope_id                 = boundary_scope.core_infra.id
   default_port             = 5432
   session_connection_limit = -1
+  application_credential_source_ids = [
+    boundary_credential_library_vault.postgres_cred_library.id
+  ]
 
   host_set_ids = [
     boundary_host_set.backend_servers_ssh.id
@@ -178,7 +181,7 @@ resource "boundary_target" "backend_servers_postgres" {
 # create target for accessing backend servers on port :22
 resource "boundary_target" "app_servers_ssh" {
   type         = "tcp"
-  name         = "ssh_server"
+  name         = "app_ssh_server"
   description  = "app server SSH target"
   scope_id     = boundary_scope.core_infra.id
   default_port = 22
@@ -187,3 +190,20 @@ resource "boundary_target" "app_servers_ssh" {
     boundary_host_set.app_servers_ssh.id
   ]
 }
+
+resource "boundary_credential_store_vault" "postgres_cred_store" {
+  name        = "postgres_cred_store"
+  description = "Vault credential store for postgres related access"
+  address     = "http://127.0.0.1:8200"      # change to Vault address
+  token       = var.vault_token # change to valid Vault token
+  scope_id    = boundary_scope.core_infra.id
+}
+
+resource "boundary_credential_library_vault" "postgres_cred_library" {
+  name                = "postgres_cred_library"
+  description         = "Vault credential library for postgres access"
+  credential_store_id = boundary_credential_store_vault.postgres_cred_store.id
+  path                = "database/creds/vault_go_demo" # change to Vault backend path
+  http_method         = "GET"
+}
+

@@ -224,11 +224,10 @@ git clone https://github.com/Andrew-Klaas/aws-vault-go-demo-tokenization.git
 
 exit 0
 
-export BOUNDARY_ADDR="http://hashistack-server:9200"
-boundary authenticate password -auth-method-id=ampw_1234567890 -login-name=admin -password=password
 
+
+vault login -method=userpass username=vault password=vault
 vault policy write boundary-controller boundary-controller-policy.hcl
-
 vault token create \
   -no-default-policy=true \
   -policy="boundary-controller" \
@@ -237,9 +236,18 @@ vault token create \
   -period=20m \
   -renewable=true
 
+
+#feed token to terraform
+terraform apply --auto-approve;
+
 # psql --host hashistack-client-2 --port 5432 --user postgres --dbname vault_go_demo
+# boundary connect postgres -username=postgres -target-id=ttcp_rgaU4ZYRxI
 
-# boundary scopes list -recursive
+
+boundary authenticate password -auth-method-id ampw_1234567890 -login-name admin -password "password"
+export BOUNDARY_TOKEN=
+boundary connect ssh -target-id ttcp_6KLBeXmwdH
 
 
-#ExecStart=/usr/local/bin/boundary dev -api-listen-address=hashistack-server:9200 -addr=http://hashistack-server:9200 -cluster-listen-address=hashistack-server:9201 -proxy-listen-address=hashistack-server:9202 -log-level=debug
+boundary targets authorize-session -id  ttcp_rgaU4ZYRxI
+boundary connect postgres -target-id ttcp_rgaU4ZYRxI --dbname vault_go_demo
