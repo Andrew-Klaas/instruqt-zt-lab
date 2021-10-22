@@ -6,23 +6,30 @@ provider "boundary" {
 }
 
 variable "users" {
-  type    = set(string)
+  type = set(string)
   default = [
     "Jim"
   ]
 }
 
 variable "readonly_users" {
-  type    = set(string)
+  type = set(string)
   default = [
     "Chris"
   ]
 }
 
 variable "backend_server_ips" {
-  type    = set(string)
+  type = set(string)
   default = [
     "hashistack-client-2",
+  ]
+}
+
+variable "app_server_ips" {
+  type = set(string)
+  default = [
+    "hashistack-client-1",
   ]
 }
 
@@ -79,21 +86,21 @@ resource "boundary_group" "readonly" {
 }
 
 resource "boundary_role" "organization_readonly" {
-  name        = "Read-only"
-  description = "Read-only role"
+  name          = "Read-only"
+  description   = "Read-only role"
   principal_ids = [boundary_group.readonly.id]
   grant_strings = ["id=*;type=*;actions=read"]
-  scope_id    = boundary_scope.corp.id
+  scope_id      = boundary_scope.corp.id
 }
 
 resource "boundary_role" "organization_admin" {
   name        = "admin"
   description = "Administrator role"
   principal_ids = concat(
-    [for user in boundary_user.users: user.id]
+    [for user in boundary_user.users : user.id]
   )
-  grant_strings   = ["id=*;type=*;actions=create,read,update,delete"]
-  scope_id = boundary_scope.corp.id
+  grant_strings = ["id=*;type=*;actions=create,read,update,delete"]
+  scope_id      = boundary_scope.corp.id
 }
 
 resource "boundary_scope" "core_infra" {
@@ -118,6 +125,14 @@ resource "boundary_host" "backend_servers" {
   address         = each.key
   host_catalog_id = boundary_host_catalog.backend_servers.id
 }
+resource "boundary_host" "app_servers" {
+  for_each        = var.app_server_ips
+  type            = "static"
+  name            = "app_server_service_${each.value}"
+  description     = "Backend server host"
+  address         = each.key
+  host_catalog_id = boundary_host_catalog.backend_servers.id
+}
 
 resource "boundary_host_set" "backend_servers_ssh" {
   type            = "static"
@@ -125,6 +140,13 @@ resource "boundary_host_set" "backend_servers_ssh" {
   description     = "Host set for backend servers"
   host_catalog_id = boundary_host_catalog.backend_servers.id
   host_ids        = [for host in boundary_host.backend_servers : host.id]
+}
+resource "boundary_host_set" "app_servers_ssh" {
+  type            = "static"
+  name            = "app_servers_ssh"
+  description     = "Host set for app servers"
+  host_catalog_id = boundary_host_catalog.backend_servers.id
+  host_ids        = [for host in boundary_host.app_servers : host.id]
 }
 
 # create target for accessing backend servers on port :22
@@ -141,11 +163,11 @@ resource "boundary_target" "backend_servers_ssh" {
 }
 
 resource "boundary_target" "backend_servers_postgres" {
-  type         = "tcp"
-  name         = "postgres_server"
-  description  = "Backend postgres target"
-  scope_id     = boundary_scope.core_infra.id
-  default_port = 5432
+  type                     = "tcp"
+  name                     = "postgres_server"
+  description              = "Backend postgres target"
+  scope_id                 = boundary_scope.core_infra.id
+  default_port             = 5432
   session_connection_limit = -1
 
   host_set_ids = [
@@ -153,3 +175,15 @@ resource "boundary_target" "backend_servers_postgres" {
   ]
 }
 
+# create target for accessing backend servers on port :22
+resource "boundary_target" "app_servers_ssh" {
+  type         = "tcp"
+  name         = "ssh_server"
+  description  = "app server SSH target"
+  scope_id     = boundary_scope.core_infra.id
+  default_port = 22
+
+  host_set_ids = [
+    boundary_host_set.app_servers_ssh.id
+  ]
+}
