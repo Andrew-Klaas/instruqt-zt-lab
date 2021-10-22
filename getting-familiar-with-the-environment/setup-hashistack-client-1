@@ -26,7 +26,6 @@ unzip -o -d /usr/local/bin/ /tmp/consul.zip
 
 cd /tmp
 git clone https://github.com/Andrew-Klaas/instruqt-zt-lab.git
-cp 
 
 # Copy additional files.
 ENVOY_VERSION="1.18.3"
