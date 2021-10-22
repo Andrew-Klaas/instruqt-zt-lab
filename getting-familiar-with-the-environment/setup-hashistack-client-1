@@ -121,3 +121,9 @@ EOF
 
 systemctl enable goapp.service
 systemctl start goapp
+
+exit 0
+
+boundary authenticate password -auth-method-id ampw_1234567890 -login-name admin -password "password"
+export BOUNDARY_TOKEN=at_z2xLGZ10qi_s1Abrod7n4Uq8tGDd77FCw8JfFbok84SSoL786nhP2EndGwK4wqysUhyg4rseRCKEHibvECQLuLNDx1z4NhaPqCDThyXjEMaJJwzeKPcrf9eddyeSaY
+boundary connect ssh -target-id ttcp_6KLBeXmwdH
