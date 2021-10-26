@@ -191,7 +191,7 @@ vault secrets enable database
 vault write database/config/my-postgresql-database \
 plugin_name=postgresql-database-plugin \
 allowed_roles="my-role, vault_go_demo" \
-connection_url="postgresql://{{username}}:{{password}}@hashistack-client-2:5432/vault_go_demo?sslmode=disable" \
+connection_url="postgresql://{{username}}:{{password}}@postgres.service.consul:5432/vault_go_demo?sslmode=disable" \
 username="postgres" \
 password="password"
 
@@ -201,6 +201,8 @@ creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}'
 ALTER USER \"{{name}}\" WITH SUPERUSER;" \
 default_ttl="1h" \
 max_ttl="24h"
+
+vault read database/creds/vault_go_demo
 
 echo "Vault install complete" >> /tmp/install.log
 
