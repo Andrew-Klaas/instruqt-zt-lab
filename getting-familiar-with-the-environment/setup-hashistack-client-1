@@ -119,14 +119,6 @@ aws_access_key_id=$AWS_ACCESS_KEY_ID
 aws_secret_access_key=$AWS_SECRET_ACCESS_KEY
 EOF
 
-db_service_avail="null"
-while [ "${db_service_avail}" == "null" ] ; do
-  echo "Waiting for postgres to be available"
-  sleep 5
-  db_service_avail=$(curl --silent "http://localhost:8500/v1/catalog/services" | jq -r '.postgres')
-done
-echo "done"
-
 systemctl enable goapp.service
 sleep 1
 systemctl restart goapp
