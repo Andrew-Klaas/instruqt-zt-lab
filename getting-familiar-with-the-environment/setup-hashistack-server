@@ -182,7 +182,7 @@ db_service_avail="null"
 while [ "${db_service_avail}" == "null" ] ; do
   echo "Waiting for postgres to be available"
   sleep 5
-  db_service_avail=$(curl --silent "http://hashistack-server:8500/v1/catalog/services/postgres" | jq -r '.postgres')
+  db_service_avail=$(curl --silent "http://localhost:8500/v1/catalog/services" | jq -r '.postgres')
 done
 echo "done"
 
@@ -238,14 +238,14 @@ vault token create \
 
 
 #feed token to terraform
+terraform init;
 terraform apply --auto-approve;
 
 # psql --host hashistack-client-2 --port 5432 --user postgres --dbname vault_go_demo
 # boundary connect postgres -username=postgres -target-id=ttcp_rgaU4ZYRxI
 
 
-boundary authenticate password -auth-method-id ampw_1234567890 -login-name admin -password "password"
-export BOUNDARY_TOKEN=
+export BOUNDARY_TOKEN=$(boundary authenticate password -auth-method-id ampw_1234567890 -login-name admin -password "password" -keyring-type=none -format=json | jq -r '.item.attributes.token')
 boundary connect ssh -target-id ttcp_6KLBeXmwdH
 
 
