@@ -252,3 +252,6 @@ boundary connect ssh -target-id ttcp_6KLBeXmwdH
 
 boundary targets authorize-session -id  ttcp_rgaU4ZYRxI
 boundary connect postgres -target-id ttcp_rgaU4ZYRxI --dbname vault_go_demo
+
+
+# boundary authenticate password -auth-method-id ampw_1234567890 -login-name admin -password "password" -keyring-type=none -format=json 
