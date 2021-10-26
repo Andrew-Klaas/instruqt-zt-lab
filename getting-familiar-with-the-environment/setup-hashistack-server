@@ -181,10 +181,10 @@ vault write auth/aws/role/my-role-iam \
 db_service_avail="null"
 while [ "${db_service_avail}" == "null" ] ; do
   echo "Waiting for postgres to be available"
-  sleep 5
+  sleep 5s
   db_service_avail=$(curl --silent "http://localhost:8500/v1/catalog/services" | jq -r '.postgres')
 done
-echo "done"
+sleep 5s
 
 vault secrets enable database
 
@@ -223,7 +223,6 @@ apt-get install -y golang
 git clone https://github.com/Andrew-Klaas/aws-vault-go-demo-tokenization.git
 
 exit 0
-
 
 
 vault login -method=userpass username=vault password=vault
