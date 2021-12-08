@@ -54,4 +54,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 60000
-checksum: "16712478525894780879"
+checksum: "10451754586986165228"

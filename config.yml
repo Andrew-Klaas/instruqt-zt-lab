@@ -1,5 +1,13 @@
 version: "2"
 virtualmachines:
+- name: hashistack-server
+  image: instruqt-hashicorp/ubuntu-base
+  shell: /bin/bash -l
+  environment:
+    BOUNDARY_ADDR: http://hashistack-server:9200
+    CONSUL_HTTP_ADDR: hashistack-server:8500
+    VAULT_ADDR: http://127.0.0.1:8200
+  machine_type: n1-standard-1
 - name: hashistack-client-1
   image: instruqt-hashicorp/ubuntu-base
   shell: /bin/bash -l
@@ -13,14 +21,6 @@ virtualmachines:
   environment:
     CONSUL_HTTP_ADDR: hashistack-client-2:8500
     VAULT_ADDR: http://active.vault.service.consul:8200
-  machine_type: n1-standard-1
-- name: hashistack-server
-  image: instruqt-hashicorp/ubuntu-base
-  shell: /bin/bash -l
-  environment:
-    BOUNDARY_ADDR: http://hashistack-server:9200
-    CONSUL_HTTP_ADDR: hashistack-server:8500
-    VAULT_ADDR: http://127.0.0.1:8200
   machine_type: n1-standard-1
 aws_accounts:
 - name: vault-dynamic-secrets-aws
