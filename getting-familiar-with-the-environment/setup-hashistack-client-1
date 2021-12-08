@@ -29,11 +29,11 @@ git clone https://github.com/Andrew-Klaas/instruqt-zt-lab.git
 
 # Copy additional files.
 ENVOY_VERSION="1.18.3"
-wget https://archive.tetratelabs.io/envoy/download/v${ENVOY_VERSION}/envoy-v${ENVOY_VERSION}-linux-amd64.tar.xz
+wget https://archive.tetratelabs.io/envoy/download/v1.18.3/envoy-v1.18.3-linux-amd64.tar.xz
 tar -xf envoy-v${ENVOY_VERSION}-linux-amd64.tar.xz
 chmod +x envoy-v${ENVOY_VERSION}-linux-amd64/bin/envoy
 mv envoy-v${ENVOY_VERSION}-linux-amd64/bin/envoy /usr/local/bin/envoy
-rm -rf envoy-v${ENVOY_VERSION}-linux-amd64.tar.xz envoy-v${ENVOY_VERSION}-linux-amd6
+rm -rf envoy-v${ENVOY_VERSION}-linux-amd64.tar.xz envoy-v${ENVOY_VERSION}-linux-amd64
 
 cp instruqt-zt-lab/assets/systemd-files/consul.service /etc/systemd/system/consul.service
 cp instruqt-zt-lab/assets/systemd-files/goapp.service /etc/systemd/system/goapp.service
