@@ -14,19 +14,19 @@ CONSUL_VERSION=1.10.2
 BOUNDARY_VERSION=0.6.1
 
 # Install Vault
-curl -fsSL -o /tmp/vault.zip https://releases.hashicorp.com/vault/${VAULT_VERSION}+ent/vault_${VAULT_VERSION}+ent_linux_amd64.zip
+curl -fsSL -o /tmp/vault.zip "https://releases.hashicorp.com/vault/${VAULT_VERSION}+ent/vault_${VAULT_VERSION}+ent_linux_amd64.zip"
 unzip -o -d /usr/local/bin/ /tmp/vault.zip
 
 # Install Terraform
-curl -fsSL -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+curl -fsSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
 unzip -o -d /usr/local/bin/ /tmp/terraform.zip
 
 # Install Consul
-curl -fsSL -o /tmp/consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip
+curl -fsSL -o /tmp/consul.zip "https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip"
 unzip -o -d /usr/local/bin/ /tmp/consul.zip
 
 # Install Boundary
-curl -fsSL -o /tmp/boundary.zip https://releases.hashicorp.com/boundary/${BOUNDARY_VERSION}/boundary_${BOUNDARY_VERSION}_linux_amd64.zip
+curl -fsSL -o /tmp/boundary.zip "https://releases.hashicorp.com/boundary/${BOUNDARY_VERSION}/boundary_${BOUNDARY_VERSION}_linux_amd64.zip"
 unzip -o -d /usr/local/bin/ /tmp/boundary.zip
 
 cd /tmp
