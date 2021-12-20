@@ -121,6 +121,6 @@ EOF
 
 systemctl enable goapp.service
 sleep 1
-systemctl restart goapp
+#systemctl start goapp
 
 exit 0

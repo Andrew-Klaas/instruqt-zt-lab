@@ -13,14 +13,14 @@ virtualmachines:
   shell: /bin/bash -l
   environment:
     CONSUL_HTTP_ADDR: hashistack-client-1:8500
-    VAULT_ADDR: http://active.vault.service.consul:8200
+    VAULT_ADDR: http://hashistack-server:8200
   machine_type: n1-standard-1
 - name: hashistack-client-2
   image: instruqt-hashicorp/ubuntu-base
   shell: /bin/bash -l
   environment:
     CONSUL_HTTP_ADDR: hashistack-client-2:8500
-    VAULT_ADDR: http://active.vault.service.consul:8200
+    VAULT_ADDR: http://hashistack-server:8200
   machine_type: n1-standard-1
 aws_accounts:
 - name: vault-dynamic-secrets-aws

@@ -13,7 +13,7 @@ developers:
 private: true
 published: false
 challenges:
-- slug: getting-familiar-with-the-environment
+- slug: Vault - AWS Authentication
   id: oj6ydqgrfeob
   type: challenge
   title: Getting familiar with the environment
@@ -54,4 +54,46 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 60000
-checksum: "491101559088812345"
+- slug: Vault - Dynamic Secrets
+  id: oj6ydqgrfeob
+  type: challenge
+  title: Getting familiar with the environment
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  tabs:
+  - title: Server
+    type: terminal
+    hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
+  difficulty: basic
+  timelimit: 60000
+
+checksum: "7406675698494535435"

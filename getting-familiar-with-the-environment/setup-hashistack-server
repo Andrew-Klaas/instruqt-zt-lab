@@ -227,31 +227,280 @@ git clone https://github.com/Andrew-Klaas/aws-vault-go-demo-tokenization.git
 exit 0
 
 
+
+
+
+
+
+
+
+
+
+
+
+###################################################
+# VAULT
+###################################################
+#Switch to Client 1 tab
+############
+#CHALLENGE 1: AWS Auth
+############
+#Client 1 Tab
 vault login -method=userpass username=vault password=vault
+vault auth list
+vault secrets list
+
+vault read auth/aws/config/client
+vault write auth/aws/role/my-role-iam \
+    auth_type=iam \
+    bound_iam_principal_arn=arn:aws:iam::$AWS_ACCOUNT_ID:* \
+    policies=go-app \
+    token_ttl=30m \
+    token_max_ttl=30m
+vault read auth/aws/role/my-role-iam
+vault login -method=aws role=my-role-iam
+
+# Auth Code
+ cat /tmp/aws-vault-go-demo-tokenization/config/db.go
+
+############
+#CHALLENGE 2: Dynamic Secrets
+############
+vault secrets list
+vault read database/config/my-postgresql-database
+vault write database/roles/vault_go_demo \
+  db_name=my-postgresql-database \
+  creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
+  ALTER USER \"{{name}}\" WITH SUPERUSER;" \
+  default_ttl="1h" \
+  max_ttl="24h"
+vault read database/creds/vault_go_demo
+
+############
+#CHALLENGE 3: Tokenization/EaaS
+############
+
+vault write transform/role/vault_go_demo transformations=ssn
+vault write transform/transformations/tokenization/ssn \
+    allowed_roles=vault_go_demo \
+    max_ttl=24h
+
+vault read transform/role/vault_go_demo
+vault read transform/transformations/tokenization/ssn
+
+
+vault write transform/encode/vault_go_demo value=1111-2222-3333-4444 transformation=ssn
+vault write transform/decode/vault_go_demo value=$(ENCODED_VAULT) transformation=ssn
+
+############
+#CHALLENGE 3: Test the webapp
+############
+systemctl start goapp
+
+#Switch to App UI
+#add a record: verify data is encrypted
+
+
+#TODO: 
+# goapp's DNS
+# Add Boundary to the App
+# Add Logging to the app
+
+
+
+
+###################################################
+# CONSUL
+###################################################
+
+#############
+#CHALLENGE 1: GUI Clickthrough
+#############
+#Check Nodes
+#Check Services
+
+cd /etc/consul.d/
+
+cat consul.hcl
+datacenter = "dc1"
+retry_join = ["hashistack-server"]
+retry_interval = ["5s"]
+data_dir = "/tmp/consul"
+server = false
+log_level = "DEBUG"
+node_name = "hashistack-client-1"
+client_addr = "10.132.0.106 127.0.0.1"
+bind_addr = "10.132.0.106"
+ui = true
+ports {
+  grpc = 8502
+}
+
+cat goapp.hcl
+service {
+  name = "goapp"
+  tags = [ "goapp" ]
+  port = 9090
+  connect {
+    sidecar_service {
+      proxy {
+        upstreams = [
+          {
+            destination_name = "postgres"
+            local_bind_port  = 5432
+          }
+        ]
+      }
+    }
+  }
+}
+
+consul catalog services
+
+dig postgres.service.consul
+
+Client 1:
+cat goapp.hcl
+
+Client 2:
+cat postgres.hcl
+
+cat << EOF > ~/config-intentions-postgres-allow.hcl 
+Kind = "service-intentions"
+Name = "postgres"
+Sources = [
+  {
+    Name   = "goapp"
+    Action = "allow"
+  },
+  # NOTE: a default catch-all based on the default ACL policy will apply to
+  # unmatched connections and requests. Typically this will be DENY.
+]
+EOF
+consul config write config-intentions-postgres-allow.hcl
+
+cat << EOF > ~/config-intentions-postgres-deny.hcl 
+Kind = "service-intentions"
+Name = "postgres"
+Sources = [
+  {
+    Name   = "goapp"
+    Action = "deny"
+  },
+  # NOTE: a default catch-all based on the default ACL policy will apply to
+  # unmatched connections and requests. Typically this will be DENY.
+]
+EOF
+consul config write config-intentions-postgres-deny.hcl
+
+#systemctl restart goapp
+
+ psql --host 127.0.0.1 --port 5432 --user postgres --dbname vault_go_demo
+
+
+
+
+
+###################################################
+# BOUNDARY
+###################################################
+#Switch to Server Tab
+##############
+# Challenge 1: Configure Boundary and Vault
+##############
+vault login -method=userpass username=vault password=vault
+cd terraform-boundary/
 vault policy write boundary-controller boundary-controller-policy.hcl
 vault token create \
   -no-default-policy=true \
   -policy="boundary-controller" \
-  -policy="go-app" \
+  -policy="go-app"
   -orphan=true \
   -period=20m \
   -renewable=true
 
+# Edit terraform.tfvars
 
 #feed token to terraform
 terraform init;
 terraform apply --auto-approve;
 
+###############
+# challenge 2: Expore the UI
+###############
+#login to Boundary and explore the UI
+username: admin
+password: password
+
+#navigate to targets and note the Postgresql target
+# Copy the target: ttcp_uJw5GWOygZ
+
 # psql --host hashistack-client-2 --port 5432 --user postgres --dbname vault_go_demo
 # boundary connect postgres -username=postgres -target-id=ttcp_rgaU4ZYRxI
 
-
+###############
+# challenge 3: Login via the CLI, and connect to a database
+###############
 export BOUNDARY_TOKEN=$(boundary authenticate password -auth-method-id ampw_1234567890 -login-name admin -password "password" -keyring-type=none -format=json | jq -r '.item.attributes.token')
-boundary connect ssh -target-id ttcp_6KLBeXmwdH
+echo $BOUNDARY_TOKEN
+
+#Copy the postgres_server target from the corp_one org
+export POSTGRES_TARGET=ttcp_uJw5GWOygZ
+boundary targets authorize-session -id  $POSTGRES_TARGET
+boundary connect postgres -target-id $POSTGRES_TARGET --dbname vault_go_demo
+
+# SSH: ssh_server target (client2)
+export SSH_TARGET=ttcp_NOc69dtAPD
+boundary connect ssh -target-id $SSH_TARGET
 
 
-boundary targets authorize-session -id  ttcp_rgaU4ZYRxI
-boundary connect postgres -target-id ttcp_rgaU4ZYRxI --dbname vault_go_demo
 
 
-# boundary authenticate password -auth-method-id ampw_1234567890 -login-name admin -password "password" -keyring-type=none -format=json 
+
+
+
+
+
+
+############
+- slug: getting-familiar-with-the-environment
+  id: oj6ydqgrfeob
+  type: challenge
+  title: Getting familiar with the environment
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  tabs:
+  - title: Server
+    type: terminal
+    hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
+  difficulty: basic
+  timelimit: 60000
