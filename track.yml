@@ -13,10 +13,10 @@ developers:
 private: true
 published: false
 challenges:
-- slug: Vault - AWS Authentication
+- slug: 01-vault-aws-authentication
   id: oj6ydqgrfeob
   type: challenge
-  title: Getting familiar with the environment
+  title: Vault's AWS authentication method
   teaser: Test the various tool components
   notes:
   - type: text
@@ -54,10 +54,10 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 60000
-- slug: Vault - Dynamic Secrets
-  id: oj6ydqgrfeob
+- slug: 02-vault-dynamic-secrets
+  id: kqyrabasn1cy
   type: challenge
-  title: Getting familiar with the environment
+  title: Vault dynamic secrets
   teaser: Test the various tool components
   notes:
   - type: text
@@ -95,5 +95,414 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 60000
-
-checksum: "7406675698494535435"
+- slug: 03-vault-tokenization-eaas
+  id: jqwymtoguy41
+  type: challenge
+  title: Vault Tokenization (Or EaaS)
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  tabs:
+  - title: Server
+    type: terminal
+    hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
+  difficulty: basic
+  timelimit: 60000
+- slug: 04-test-app
+  id: c5zycezukwae
+  type: challenge
+  title: Test the application
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  tabs:
+  - title: Server
+    type: terminal
+    hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
+  difficulty: basic
+  timelimit: 600
+- slug: 05-consul-ui
+  id: onnejylpe8tv
+  type: challenge
+  title: Explore the Consul UI
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  tabs:
+  - title: Server
+    type: terminal
+    hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
+  difficulty: basic
+  timelimit: 600
+- slug: 06-consul-services
+  id: kiuymimbpn9n
+  type: challenge
+  title: Defining Consul Services
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  tabs:
+  - title: Server
+    type: terminal
+    hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
+  difficulty: basic
+  timelimit: 600
+- slug: 07-consul-dns
+  id: 4ufy2zk3wj3d
+  type: challenge
+  title: Testing Consul DNS
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  tabs:
+  - title: Server
+    type: terminal
+    hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
+  difficulty: basic
+  timelimit: 600
+- slug: 08-define-consul-intentions
+  id: 978rumtsfwey
+  type: challenge
+  title: Defining Consul Intentions (Network Policy)
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  tabs:
+  - title: Server
+    type: terminal
+    hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
+  difficulty: basic
+  timelimit: 600
+- slug: 09-test-consul-intentions
+  id: xslnysgv6mzj
+  type: challenge
+  title: Testing Consul Intentions
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  tabs:
+  - title: Server
+    type: terminal
+    hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
+  difficulty: basic
+  timelimit: 600
+- slug: 10-configure-boundary-and-vault
+  id: j5btwrjmcgx5
+  type: challenge
+  title: Configure Boundary and Vault
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  tabs:
+  - title: Server
+    type: terminal
+    hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
+  difficulty: basic
+  timelimit: 600
+- slug: 11-boundary-ui
+  id: nd6xsy348mhi
+  type: challenge
+  title: Explore the Boundary UI
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  tabs:
+  - title: Server
+    type: terminal
+    hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
+  difficulty: basic
+  timelimit: 600
+- slug: 12-connect-to-database
+  id: v5hh6i7cg6ej
+  type: challenge
+  title: Leverage Boundary to securely connect to PostgreSQL
+  teaser: Test the various tool components
+  notes:
+  - type: text
+    contents: First challenge placeholder text
+  assignment: first assignment placeholder text
+  tabs:
+  - title: Server
+    type: terminal
+    hostname: hashistack-server
+  - title: App UI
+    type: service
+    hostname: hashistack-client-1
+    port: 9090
+  - title: Vault UI
+    type: service
+    hostname: hashistack-server
+    port: 8200
+  - title: Consul UI
+    type: service
+    hostname: hashistack-server
+    port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
+  - title: Client 1
+    type: terminal
+    hostname: hashistack-client-1
+  - title: Client 2
+    type: terminal
+    hostname: hashistack-client-2
+  - title: Terraform Editor
+    type: code
+    hostname: hashistack-server
+    path: /root/terraform-boundary/main.tf
+  difficulty: basic
+  timelimit: 600
+checksum: "6977540423242707544"
