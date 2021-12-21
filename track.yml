@@ -686,6 +686,13 @@ challenges:
     ```
 
     ```
+    \l
+    \u
+    quit
+    ```
+
+
+    ```
     # SSH: ssh_server target (client2)
     export SSH_TARGET=
     ```
@@ -725,4 +732,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "13427261339677704271"
+checksum: "8513252471478513456"
