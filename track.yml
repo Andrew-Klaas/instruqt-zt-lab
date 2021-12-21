@@ -21,7 +21,44 @@ challenges:
   notes:
   - type: text
     contents: First challenge placeholder text
-  assignment: first assignment placeholder text
+  assignment: |-
+    In this track, you will use Vault's AWS authentication method
+    ```
+    vault login -method=userpass username=vault password=vault
+    ```
+
+    ```
+    vault auth list
+    ```
+
+    ```
+    vault secrets list
+    ```
+
+    ```
+    vault read auth/aws/config/client
+    ```
+
+    ```
+    vault write auth/aws/role/my-role-iam \
+      auth_type=iam \
+      bound_iam_principal_arn=arn:aws:iam::$AWS_ACCOUNT_ID:* \
+      policies=go-app \
+      token_ttl=30m \
+      token_max_ttl=30m
+    ```
+
+    ```
+    vault read auth/aws/role/my-role-iam
+    ```
+
+    ```
+    vault login -method=aws role=my-role-iam
+    ```
+
+    ```
+    cat /tmp/aws-vault-go-demo-tokenization/config/db.go
+    ```
   tabs:
   - title: Server
     type: terminal
@@ -62,7 +99,28 @@ challenges:
   notes:
   - type: text
     contents: First challenge placeholder text
-  assignment: first assignment placeholder text
+  assignment: |-
+    In this track, you will use Vault's database secret engine to generate dynamic credentials.
+    ```
+    vault secrets list
+    ```
+
+    ```
+    vault read database/config/my-postgresql-database
+    ```
+
+    ```
+    vault write database/roles/vault_go_demo \
+      db_name=my-postgresql-database \
+      creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
+      ALTER USER \"{{name}}\" WITH SUPERUSER;" \
+      default_ttl="1h" \
+      max_ttl="24h"
+    ```
+
+    ```
+    vault read database/creds/vault_go_demo
+    ```
   tabs:
   - title: Server
     type: terminal
@@ -103,7 +161,33 @@ challenges:
   notes:
   - type: text
     contents: First challenge placeholder text
-  assignment: first assignment placeholder text
+  assignment: |-
+    In this track, you will use Vault's Transform secret engine.
+    ```
+    vault write transform/role/vault_go_demo transformations=ssn
+    ```
+
+    ```
+    vault write transform/transformations/tokenization/ssn \
+      allowed_roles=vault_go_demo \
+      max_ttl=24h
+    ```
+
+    ```
+    vault read transform/role/vault_go_demo
+    ```
+
+    ```
+    vault read transform/transformations/tokenization/ssn
+    ```
+
+    ```
+    vault write transform/encode/vault_go_demo value=1111-2222-3333-4444 transformation=ssn
+    ```
+
+    ```
+    vault write transform/decode/vault_go_demo value=$(ENCODED_VAULT) transformation=ssn
+    ```
   tabs:
   - title: Server
     type: terminal
@@ -144,7 +228,12 @@ challenges:
   notes:
   - type: text
     contents: First challenge placeholder text
-  assignment: first assignment placeholder text
+  assignment: |-
+    Switch to the Client 1 terminal
+    ```
+    systemctl start goapp
+    ```
+    Now test the App UI by adding a customer Record.
   tabs:
   - title: Server
     type: terminal
@@ -185,7 +274,7 @@ challenges:
   notes:
   - type: text
     contents: First challenge placeholder text
-  assignment: first assignment placeholder text
+  assignment: Explore the Consul UI Tab. Check the Nodes and Services Tabs.
   tabs:
   - title: Server
     type: terminal
@@ -226,7 +315,29 @@ challenges:
   notes:
   - type: text
     contents: First challenge placeholder text
-  assignment: first assignment placeholder text
+  assignment: |-
+    Switch to the Client 1 terminal
+    ```
+    cd /etc/consul.d/
+    cat consul.hcl
+    ```
+
+    ```
+    cat goapp.hcl
+    ```
+    Switch to the Client 2 terminal
+    ```
+    cd /etc/consul.d/
+    cat consul.hcl
+    ```
+
+    ```
+    cat postgres.hcl
+    ```
+
+    ```
+    consul catalog services
+    ```
   tabs:
   - title: Server
     type: terminal
@@ -267,7 +378,11 @@ challenges:
   notes:
   - type: text
     contents: First challenge placeholder text
-  assignment: first assignment placeholder text
+  assignment: |-
+    Test Consul DNS
+    ```
+    dig postgres.service.consul
+    ```
   tabs:
   - title: Server
     type: terminal
@@ -308,7 +423,30 @@ challenges:
   notes:
   - type: text
     contents: First challenge placeholder text
-  assignment: first assignment placeholder text
+  assignment: |-
+    Client 1:
+    ```
+    cat goapp.hcl
+    ```
+    Client 2:
+    ```
+    cat postgres.hcl
+    ```
+    ```
+    cat << EOF > ~/config-intentions-postgres-deny.hcl
+    Kind = "service-intentions"
+    Name = "postgres"
+    Sources = [
+      {
+        Name   = "goapp"
+        Action = "deny"
+      },
+      # NOTE: a default catch-all based on the default ACL policy will apply to
+      # unmatched connections and requests. Typically this will be DENY.
+    ]
+    EOF
+    consul config write config-intentions-postgres-deny.hcl
+    ```
   tabs:
   - title: Server
     type: terminal
@@ -349,7 +487,27 @@ challenges:
   notes:
   - type: text
     contents: First challenge placeholder text
-  assignment: first assignment placeholder text
+  assignment: |-
+    Client 1:
+    ```
+    cat << EOF > ~/config-intentions-postgres-allow.hcl
+    Kind = "service-intentions"
+    Name = "postgres"
+    Sources = [
+      {
+        Name   = "goapp"
+        Action = "allow"
+      },
+      # NOTE: a default catch-all based on the default ACL policy will apply to
+      # unmatched connections and requests. Typically this will be DENY.
+    ]
+    EOF
+    consul config write config-intentions-postgres-allow.hcl
+    ```
+    ```
+    systemctl restart goapp
+    ```
+    Test the Webapp
   tabs:
   - title: Server
     type: terminal
@@ -390,7 +548,33 @@ challenges:
   notes:
   - type: text
     contents: First challenge placeholder text
-  assignment: first assignment placeholder text
+  assignment: |-
+    Client 1:
+    ```
+    vault login -method=userpass username=vault password=vault
+    ```
+
+    ```
+    cd terraform-boundary/
+    cat boundary-controller-policy.hcl
+    ```
+
+    ```
+    vault policy write boundary-controller boundary-controller-policy.hcl
+    vault token create \
+      -no-default-policy=true \
+      -policy="boundary-controller" \
+      -policy="go-app"
+      -orphan=true \
+      -period=20m \
+      -renewable=true
+    ```
+
+    ```
+    #feed token to terraform
+    terraform init;
+    terraform apply --auto-approve;
+    ```
   tabs:
   - title: Server
     type: terminal
@@ -431,7 +615,14 @@ challenges:
   notes:
   - type: text
     contents: First challenge placeholder text
-  assignment: first assignment placeholder text
+  assignment: |-
+    Login to Boundary and explore the UI
+    ```
+    username: admin
+    password: password
+    ```
+    Navigate to the corp_one org then to targets. Note the different targets we can access.
+    Copy the Postgres_server Target. We will access this in the next challenge.
   tabs:
   - title: Server
     type: terminal
@@ -472,7 +663,34 @@ challenges:
   notes:
   - type: text
     contents: First challenge placeholder text
-  assignment: first assignment placeholder text
+  assignment: |-
+    Login to Boundary and explore the UI
+    ```
+    export BOUNDARY_TOKEN=$(boundary authenticate password -auth-method-id ampw_1234567890 -login-name admin -password "password" -keyring-type=none -format=json | jq -r '.item.attributes.token')
+    echo $BOUNDARY_TOKEN
+    ```
+
+    ```
+    #Copy the postgres_server target from the corp_one org
+    export POSTGRES_TARGET=ttcp_uJw5GWOygZ
+    ```
+
+    ```
+    boundary targets authorize-session -id  $POSTGRES_TARGET
+    ```
+
+    ```
+    boundary connect postgres -target-id $POSTGRES_TARGET --dbname vault_go_demo
+    ```
+
+    ```
+    # SSH: ssh_server target (client2)
+    export SSH_TARGET=
+    ```
+
+    ```
+    boundary connect ssh -target-id $SSH_TARGET
+    ```
   tabs:
   - title: Server
     type: terminal
@@ -505,4 +723,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "2475767497059078425"
+checksum: "15732195201505676249"
