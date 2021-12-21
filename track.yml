@@ -426,10 +426,12 @@ challenges:
   assignment: |-
     Client 1:
     ```
+    cd /etc/consul.d/
     cat goapp.hcl
     ```
     Client 2:
     ```
+    cd /etc/consul.d/
     cat postgres.hcl
     ```
     ```
@@ -564,7 +566,7 @@ challenges:
     vault token create \
       -no-default-policy=true \
       -policy="boundary-controller" \
-      -policy="go-app"
+      -policy="go-app" \
       -orphan=true \
       -period=20m \
       -renewable=true
@@ -723,4 +725,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "15732195201505676249"
+checksum: "13427261339677704271"
