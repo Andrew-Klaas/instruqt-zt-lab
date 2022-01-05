@@ -708,15 +708,34 @@ challenges:
   teaser: Get familiar with Boundary projects and targets.
   notes:
   - type: text
-    contents: TODO
+    contents: As with many other HashiCorp tools, Boundary supports CLI, API, and
+      a GUI for interacting with the service. In this exercise you will explore the
+      GUI and find available targets to securely access. Boundaries domain model is
+      explained in detail here -> https://www.boundaryproject.io/docs/concepts/domain-model
+      A separate tutorial on domains is also here -> https://learn.hashicorp.com/tutorials/boundary/manage-intro?in=boundary/basic-administration
   assignment: |-
-    Login to Boundary and explore the UI
+    Login to Boundary in the "Boundary UI" tab
     ```
     username: admin
     password: password
     ```
-    Navigate to the corp_one org then to targets. Note the different targets we can access.
-    Copy the Postgres_server Target. We will access this in the next challenge.
+    Boundary's top level domain unit is called an "Org" or "Organization" (they are also called Scopes)
+    Scopes are a foundational part of Boundary. They allow users to partition resources and assign ownership of resources to principals. There are three types of scopes within Boundary:
+    Find more details at https://learn.hashicorp.com/tutorials/boundary/manage-scopes?in=boundary/basic-administration
+
+    First, navigate to the corp_one Org. This is where our resources are defined.
+
+    Within Scopes are projects. Projects contain targets and host catalogs (the actual resources/VMs/databases/APIs we are securing)
+
+    Click on "core_infra". Then click "Targets" on the left hand side.
+
+    Now copy the Postgres_server Target. We will access this in the next challenge so save the value.
+
+    Set an environment variable on the "Server" tab.
+    ```
+    #Copy the postgres_server target from the corp_one org
+    export POSTGRES_TARGET=
+    ```
   tabs:
   - title: Server
     type: terminal
@@ -756,39 +775,46 @@ challenges:
   teaser: Leverage Boundary to securely connect to PostgreSQL.
   notes:
   - type: text
-    contents: First challenge placeholder text
+    contents: We will now simulate what short-lived database access to PostgreSQL
+      would look like for an end user.
   assignment: |-
-    Login to Boundary and explore the UI
+    Login to Boundary via the CLI on the "Server" tab.
     ```
     export BOUNDARY_TOKEN=$(boundary authenticate password -auth-method-id ampw_1234567890 -login-name admin -password "password" -keyring-type=none -format=json | jq -r '.item.attributes.token')
     echo $BOUNDARY_TOKEN
     ```
+    If you haven't in the prior challenge, copy the postgres_server target from the corp_one org and set an environment variable.
 
     ```
-    #Copy the postgres_server target from the corp_one org
     export POSTGRES_TARGET=ttcp_uJw5GWOygZ
     ```
+    Next authorize a session to acess Postgres. This will create an authorization token and return dynamic database credentials from Vault.
 
     ```
     boundary targets authorize-session -id  $POSTGRES_TARGET
     ```
+    The Boundary CLI will automatically use the above information.
+    We can now connect to the database!
+
+    TODO: (You may need to run this twice as it errors on the first call)
 
     ```
     boundary connect postgres -target-id $POSTGRES_TARGET --dbname vault_go_demo
     ```
-
+    Test a few database commands!
     ```
     \l
-    \u
+    \du
     quit
     ```
-
+    you can also test SSH'ing to the database host via Boundary. Switch back to the Boundary UI and copy the "ssh_server" target.
 
     ```
     # SSH: ssh_server target (client2)
     export SSH_TARGET=
     ```
-
+    Then connect to the host.
+    TODO: (you may need to run this twice as it errors on the first call)
     ```
     boundary connect ssh -target-id $SSH_TARGET
     ```
@@ -824,4 +850,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "6265153547198914489"
+checksum: "16755982286910771905"
