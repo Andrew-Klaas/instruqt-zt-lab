@@ -348,8 +348,28 @@ challenges:
   teaser: Monitor Consul nodes & services via the UI.
   notes:
   - type: text
-    contents: First challenge placeholder text
-  assignment: Explore the Consul UI Tab. Check the Nodes and Services Tabs.
+    contents: |-
+      Consul is a service networking solution to automate network configurations, discover services, and enable secure connectivity across any cloud or runtime.
+      We will first get to know Consul by exploring the UI.
+  assignment: |-
+    Consul's UI allows you to view and interact with Consul via a graphical user interface, which can lower the barrier of entry for new users, and ease troubleshooting.
+    The Consul UI enables you to view all information about your Consul datacenter.
+
+    Access the Consul UI tab.
+
+    Consul UI Navigation is on the left hand side bar.
+
+    The "Nodes" section shows registered nodes, both Consul servers and clients. You can drill down further to find a nodes IP address, health checks, metadata, and other information.
+
+    The "Services" section shows registered services and their sidecar proxies. You can drill down further to find network topologies, assosciated intentions, the number of instances of an application, and other information.
+
+    Additionally, you can view and update the following information through the Consul UI:
+
+    Consul Key-value pairs can be read/written in the "Key/Value" section
+
+    The "Intentions" section is where we manage network policy. We will cover that in a later section.
+
+    They are disabled in this demo, but Consul auth methods and Access Control List (ACL) tokens can also be managed in the UI.
   tabs:
   - title: Server
     type: terminal
@@ -390,7 +410,9 @@ challenges:
     a service in the Consul catalog.
   notes:
   - type: text
-    contents: First challenge placeholder text
+    contents: |-
+      One of the major use cases for Consul is service discovery. Consul provides a DNS interface that downstream services can use to find the IP addresses of their upstream dependencies.
+      Consul knows where these services are located because each service registers with its local Consul client. Operators can register services manually, configuration management tools can register services when they are deployed, or container orchestration platforms can register services automatically via integrations.
   assignment: |-
     Switch to the Client 1 terminal
     ```
@@ -453,7 +475,9 @@ challenges:
   teaser: Use Consul DNS to locate services.
   notes:
   - type: text
-    contents: First challenge placeholder text
+    contents: |-
+      One of the primary query interfaces for Consul is DNS. The DNS interface allows applications to make use of service discovery without any high-touch integration with Consul.
+      For example, instead of making HTTP API requests to Consul, a host can use the DNS server directly via name lookups like redis.service.us-east-1.consul. This query automatically translates to a lookup of nodes that provide the redis service, are located in the us-east-1 datacenter, and have no failing health checks. It's that simple!
   assignment: |-
     Test Consul DNS
     ```
@@ -499,7 +523,10 @@ challenges:
     may establish connections or make requests.
   notes:
   - type: text
-    contents: First challenge placeholder text
+    contents: |-
+      Consul Intentions define access control for services via Connect and are used to control which services may establish connections or make requests. Intentions can be managed via the API, CLI, or UI.
+      Intentions are enforced on inbound connections or requests by the proxy or within a natively integrated application.
+      Depending upon the protocol in use by the destination service, you can define intentions to control Connect traffic authorization either at networking layer 4 (e.g. TCP) and application layer 7 (e.g. HTTP)
   assignment: |-
     Client 1:
     ```
@@ -565,7 +592,7 @@ challenges:
   teaser: Create Deny & Allow rules for accessing Postgres.
   notes:
   - type: text
-    contents: First challenge placeholder text
+    contents: Next we authorize traffic between the webapp and Postgres database.
   assignment: |-
     Client 1:
     ```
@@ -850,4 +877,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "16755982286910771905"
+checksum: "14240845351930007713"
