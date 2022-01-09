@@ -414,25 +414,82 @@ challenges:
       One of the major use cases for Consul is service discovery. Consul provides a DNS interface that downstream services can use to find the IP addresses of their upstream dependencies.
       Consul knows where these services are located because each service registers with its local Consul client. Operators can register services manually, configuration management tools can register services when they are deployed, or container orchestration platforms can register services automatically via integrations.
   assignment: |-
-    Switch to the Client 1 terminal
+    Switch to the Client 1 terminal. Let's check the Consul Agent Config first.
     ```
     cd /etc/consul.d/
     cat consul.hcl
     ```
-
+    This Agent is running in Client mode. The configuration is used to set several options like which address to bind to, where the Consul Servers are that we want to join, and other info like log levels.
+    ```
+    datacenter = "dc1"
+    retry_join = ["hashistack-server"]
+    retry_interval = ["5s"]
+    data_dir = "/tmp/consul"
+    server = false
+    log_level = "DEBUG"
+    node_name = "hashistack-client-1"
+    client_addr = "10.132.0.181 127.0.0.1"
+    bind_addr = "10.132.0.181"
+    ui = true
+    ports {
+      grpc = 8502
+    }
+    ```
+    Next lets check our webapp's service definition.
     ```
     cat goapp.hcl
     ```
-    Switch to the Client 2 terminal
+    This file is used to define the name/ports of the service, how to configure a sidecar proxy, health checks, etc.
+
+    We will discuss the Connect stanza in more detail in the next section.
+    ```
+    service {
+      name = "goapp"
+      tags = [ "goapp" ]
+      port = 9090
+      connect {
+        sidecar_service {
+          proxy {
+            upstreams = [
+              {
+                destination_name = "postgres"
+                local_bind_port  = 5432
+              }
+            ]
+          }
+        }
+      }
+    }
+    ```
+    Switch to the Client 2 terminal to check our postgres service definition.
     ```
     cd /etc/consul.d/
-    cat consul.hcl
-    ```
-
-    ```
     cat postgres.hcl
     ```
-
+    We've included an example health check under the "check" stanza. Consul will run a tcp check against the local postgres database on 10 second intervals.
+    You can also configure Consul to execute a script or perform HTTP checks as well.
+    ```
+    service {
+      name = "postgres"
+      tags = [ "postgres" ]
+      port = 5432
+      connect {
+        sidecar_service {
+          proxy {
+            config {
+              protocol = "tcp"
+            }
+          }
+        }
+      }
+      check {
+        id       = "postgresql-check"
+        tcp      = "127.0.0.1:5432"
+        interval = "10s"
+      }
+    }
+    ```
+    You can view all services registered in Consul via the following command
     ```
     consul catalog services
     ```
@@ -479,10 +536,15 @@ challenges:
       One of the primary query interfaces for Consul is DNS. The DNS interface allows applications to make use of service discovery without any high-touch integration with Consul.
       For example, instead of making HTTP API requests to Consul, a host can use the DNS server directly via name lookups like redis.service.us-east-1.consul. This query automatically translates to a lookup of nodes that provide the redis service, are located in the us-east-1 datacenter, and have no failing health checks. It's that simple!
   assignment: |-
-    Test Consul DNS
+    Switch to the Client 1 tab.
+
+    We've already configured the nodes to leverage Consul for resolving any "*.consul" domains.
+
+    Use the dig command to find our postgres database registered in Consul.
     ```
     dig postgres.service.consul
     ```
+    You should see the IP address of the postgres database returned!
   tabs:
   - title: Server
     type: terminal
@@ -528,16 +590,22 @@ challenges:
       Intentions are enforced on inbound connections or requests by the proxy or within a natively integrated application.
       Depending upon the protocol in use by the destination service, you can define intentions to control Connect traffic authorization either at networking layer 4 (e.g. TCP) and application layer 7 (e.g. HTTP)
   assignment: |-
-    Client 1:
+    Let's look at our service definitions to understand how connect is configured.
+
+    First, switch to the "Client1" tab. We will review the service configuration again with a focus on connect.
     ```
     cd /etc/consul.d/
     cat goapp.hcl
     ```
-    Client 2:
+
+
+    Next, switch to the "Client2" tab
     ```
     cd /etc/consul.d/
     cat postgres.hcl
     ```
+
+    We can now set a Consul intention to first deny access from the goapp to the database.
     ```
     cat << EOF > ~/config-intentions-postgres-deny.hcl
     Kind = "service-intentions"
@@ -594,7 +662,8 @@ challenges:
   - type: text
     contents: Next we authorize traffic between the webapp and Postgres database.
   assignment: |-
-    Client 1:
+    Now let's enable traffic between the webapp and postgres
+    Switch to the client 1 tab and write the following servic eintentions to Consul. This can be done on the Server tab as well.
     ```
     cat << EOF > ~/config-intentions-postgres-allow.hcl
     Kind = "service-intentions"
@@ -610,10 +679,13 @@ challenges:
     EOF
     consul config write config-intentions-postgres-allow.hcl
     ```
+    You can see we've changed the Action to "allow".
+
+    Consul Connect/Envoy will not affect existing connections so we will need to restart the application for the changes to take effect.
     ```
     systemctl restart goapp
     ```
-    Test the Webapp
+    You should see the webapp successfully start now as it was able to connect and initalize the database.
   tabs:
   - title: Server
     type: terminal
@@ -877,4 +949,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "14240845351930007713"
+checksum: "12151134939484183211"
