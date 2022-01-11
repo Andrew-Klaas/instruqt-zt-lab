@@ -99,20 +99,12 @@ challenges:
     type: service
     hostname: hashistack-server
     port: 8500
-  - title: Boundary UI
-    type: service
-    hostname: hashistack-server
-    port: 9200
   - title: Client 1
     type: terminal
     hostname: hashistack-client-1
   - title: Client 2
     type: terminal
     hostname: hashistack-client-2
-  - title: Terraform Editor
-    type: code
-    hostname: hashistack-server
-    path: /root/terraform-boundary/main.tf
   - title: Goapp - Vault code
     type: code
     hostname: hashistack-server
@@ -199,10 +191,6 @@ challenges:
   - title: Client 2
     type: terminal
     hostname: hashistack-client-2
-  - title: Terraform Editor
-    type: code
-    hostname: hashistack-server
-    path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 60000
 - slug: 03-vault-tokenization-eaas
@@ -335,10 +323,6 @@ challenges:
   - title: Client 2
     type: terminal
     hostname: hashistack-client-2
-  - title: Terraform Editor
-    type: code
-    hostname: hashistack-server
-    path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
 - slug: 05-consul-ui
@@ -396,10 +380,6 @@ challenges:
   - title: Client 2
     type: terminal
     hostname: hashistack-client-2
-  - title: Terraform Editor
-    type: code
-    hostname: hashistack-server
-    path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
 - slug: 06-consul-services
@@ -519,10 +499,6 @@ challenges:
   - title: Client 2
     type: terminal
     hostname: hashistack-client-2
-  - title: Terraform Editor
-    type: code
-    hostname: hashistack-server
-    path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
 - slug: 07-consul-dns
@@ -571,10 +547,6 @@ challenges:
   - title: Client 2
     type: terminal
     hostname: hashistack-client-2
-  - title: Terraform Editor
-    type: code
-    hostname: hashistack-server
-    path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
 - slug: 08-define-consul-intentions
@@ -589,38 +561,64 @@ challenges:
       Consul Intentions define access control for services via Connect and are used to control which services may establish connections or make requests. Intentions can be managed via the API, CLI, or UI.
       Intentions are enforced on inbound connections or requests by the proxy or within a natively integrated application.
       Depending upon the protocol in use by the destination service, you can define intentions to control Connect traffic authorization either at networking layer 4 (e.g. TCP) and application layer 7 (e.g. HTTP)
-  assignment: |-
-    Let's look at our service definitions to understand how connect is configured.
+  assignment: |2-
 
-    First, switch to the "Client1" tab. We will review the service configuration again with a focus on connect.
+    Let's look at our webapp and database service definitions to understand how connect is configured.
+
+    Switch to the "Client1" tab. We will review the service configuration again with a focus on connect.
     ```
     cd /etc/consul.d/
     cat goapp.hcl
     ```
+    The Connect stanza holds configuration for this Services Side Car proxy.
+    First, note the sidecar stanza within the connect stanza.
 
+    ```
+    connect {
+      sidecar_service {
+        proxy {
+          upstreams = [
+            {
+              destination_name = "postgres"
+              local_bind_port  = 5432
+            }
+          ]
+        }
+      }
+    }
+    ```
+
+    Connect proxies are typically deployed as "sidecars" that run on the same node as the single service instance that they handle traffic for. They might be on the same VM or running as a separate container in the same network namespace.
+    In this case, we will be leveraging Envoy as the sidecar proxy.
+
+    Next we define proxy "upstreams". These upstreams determine which backend services this local webapp/proxy is able to direct traffic too.
+    Within the upstreams stanza we define the destination service (regsistred in Consul) and a local port to bind too.
+    Then our service can connect to the localport instead of a remote address.
+    Note: Consul also supports Transparent Proxying - https://www.consul.io/docs/connect/transparent-proxy
+
+    In this frontend webapp's case. You can see we configured the proxy to direct traffic to the backend postgres database on the local port 5432.
 
     Next, switch to the "Client2" tab
     ```
     cd /etc/consul.d/
     cat postgres.hcl
     ```
+    This backend service does not have any upstreams, so the configuration is a bit more simple.
 
-    We can now set a Consul intention to first deny access from the goapp to the database.
     ```
-    cat << EOF > ~/config-intentions-postgres-deny.hcl
-    Kind = "service-intentions"
-    Name = "postgres"
-    Sources = [
-      {
-        Name   = "goapp"
-        Action = "deny"
-      },
-      # NOTE: a default catch-all based on the default ACL policy will apply to
-      # unmatched connections and requests. Typically this will be DENY.
-    ]
-    EOF
-    consul config write config-intentions-postgres-deny.hcl
+    connect {
+    sidecar_service {
+      proxy {
+          config {
+            protocol = "tcp"
+          }
+        }
+      }
+    }
     ```
+    The only real difference is that we specified the protocol. Consul also supports http/http2/tcp/gRPC.
+
+    With an understanding of our sidecar/connect configurations. Let's now test allowing and denying traffic.
   tabs:
   - title: Server
     type: terminal
@@ -660,10 +658,36 @@ challenges:
   teaser: Create Deny & Allow rules for accessing Postgres.
   notes:
   - type: text
-    contents: Next we authorize traffic between the webapp and Postgres database.
+    contents: You can define a service-intentions configuration entry to create and
+      manage intentions, as well as manage intentions through the Consul UI. You can
+      also perform some intention-related tasks using the API and CLI commands. Refer
+      to the API and CLI documentation for details.
   assignment: |-
-    Now let's enable traffic between the webapp and postgres
-    Switch to the client 1 tab and write the following servic eintentions to Consul. This can be done on the Server tab as well.
+    First, let's deny accesss from the webapp to the database.
+    ```
+    cat << EOF > ~/config-intentions-postgres-deny.hcl
+    Kind = "service-intentions"
+    Name = "postgres"
+    Sources = [
+      {
+        Name   = "goapp"
+        Action = "deny"
+      },
+      # NOTE: a default catch-all based on the default ACL policy will apply to
+      # unmatched connections and requests. Typically this will be DENY.
+    ]
+    EOF
+    consul config write config-intentions-postgres-deny.hcl
+    ```
+    Consul Connect/Envoy will not affect existing connections so we will need to restart the application for the changes to take effect.
+    Switch to the Client 1 tab and restart the application.
+    ```
+    systemctl restart goapp
+    ```
+    You should see that the webapp failed to start.
+
+    Now let's enable traffic between the webapp and postgres so our connection succeeds.
+    From the client 1 tab, write the following servic eintentions to Consul.
     ```
     cat << EOF > ~/config-intentions-postgres-allow.hcl
     Kind = "service-intentions"
@@ -712,10 +736,6 @@ challenges:
   - title: Client 2
     type: terminal
     hostname: hashistack-client-2
-  - title: Terraform Editor
-    type: code
-    hostname: hashistack-server
-    path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
 - slug: 10-configure-boundary-and-vault
@@ -949,4 +969,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "12151134939484183211"
+checksum: "16193309267522407902"
