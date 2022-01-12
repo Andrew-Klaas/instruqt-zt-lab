@@ -5,9 +5,11 @@ type: track
 title: WIP-Application Security with Vault, Consul, & Boundary
 teaser: Leverage the HashiCorp stack to secure application infrastructure (ZT)
 description: |-
-  This workshop will provide hands on expreicne securing an application stack utilizing several tools from the HashiCorp suite.
-  Vault will be utilized to secure application credentails and customer data. Consul will enforce mTLS and network policy. Finally, Boundary will secure access managemnt for human users like DBAs System Admins.
-icon: ""
+  This workshop will provide hands on experience securing an application stack utilizing several tools from the HashiCorp suite.
+  Vault will be use to secure application credentials and customer data.
+  Consul will enforce mTLS and network policy.
+  Finally, Boundary will secure remote access for human users like DBAs and sysadmins.
+icon: https://storage.googleapis.com/instruqt-hashicorp-tracks/logo/HashiCorp_Icon_Black.png
 tags: []
 owner: hashicorp
 developers:
@@ -110,7 +112,7 @@ challenges:
     hostname: hashistack-server
     path: /tmp/aws-vault-go-demo-tokenization/config/db.go
   difficulty: basic
-  timelimit: 60000
+  timelimit: 600
 - slug: 02-vault-dynamic-secrets
   id: kqyrabasn1cy
   type: challenge
@@ -192,7 +194,7 @@ challenges:
     type: terminal
     hostname: hashistack-client-2
   difficulty: basic
-  timelimit: 60000
+  timelimit: 600
 - slug: 03-vault-tokenization-eaas
   id: jqwymtoguy41
   type: challenge
@@ -272,7 +274,7 @@ challenges:
     hostname: hashistack-server
     path: /root/terraform-boundary/main.tf
   difficulty: basic
-  timelimit: 60000
+  timelimit: 600
 - slug: 04-test-app
   id: c5zycezukwae
   type: challenge
@@ -969,4 +971,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "16193309267522407902"
+checksum: "2404824936552706464"
