@@ -2,15 +2,18 @@ slug: klaas-zt-sandbox
 id: mjhgbj3a3yyb
 version: 0.0.1
 type: track
-title: WIP-Application Security with Vault, Consul, & Boundary
-teaser: Leverage the HashiCorp stack to secure application infrastructure (ZT)
+title: Application Security with Vault, Consul, & Boundary
+teaser: Leverage the HashiCorp stack to secure application infrastructure
 description: |-
   This workshop will provide hands on experience securing an application stack utilizing several tools from the HashiCorp suite.
   Vault will be use to secure application credentials and customer data.
   Consul will enforce mTLS and network policy.
-  Finally, Boundary will secure remote access for human users like DBAs and sysadmins.
+  Finally, Boundary will secure remote access for human users like DBAs and Linux admins.
 icon: https://storage.googleapis.com/instruqt-hashicorp-tracks/logo/HashiCorp_Icon_Black.png
-tags: []
+tags:
+- Vault
+- Consul
+- Boundary
 owner: hashicorp
 developers:
 - aklaas@hashicorp.com
@@ -117,7 +120,7 @@ challenges:
   id: kqyrabasn1cy
   type: challenge
   title: Vault dynamic secrets
-  teaser: Create least priviledge & just-in-time database credentials
+  teaser: Create least priviledge & just-in-time database credentials.
   notes:
   - type: text
     contents: |-
@@ -198,8 +201,8 @@ challenges:
 - slug: 03-vault-tokenization-eaas
   id: jqwymtoguy41
   type: challenge
-  title: Vault Transform Secret engine (Tokenization/EaaS)
-  teaser: Protect critical customer data via tokenization. (PCI Compliance)
+  title: Vault Transform secret engine (Tokenization/EaaS)
+  teaser: Protect critical customer data.
   notes:
   - type: text
     contents: The Transform secrets engine handles secure data transformation and
@@ -388,8 +391,8 @@ challenges:
   id: kiuymimbpn9n
   type: challenge
   title: Defining Consul Services
-  teaser: Create a simple service definition format to declare the availability of
-    a service in the Consul catalog.
+  teaser: Create a simple service definition to declare the availability of a service
+    in the Consul catalog.
   notes:
   - type: text
     contents: |-
@@ -555,8 +558,7 @@ challenges:
   id: 978rumtsfwey
   type: challenge
   title: Defining Consul Intentions (Network Policy)
-  teaser: Define access control for services via Connect and control which services
-    may establish connections or make requests.
+  teaser: Define access control for services via Consul Connect.
   notes:
   - type: text
     contents: |-
@@ -657,7 +659,7 @@ challenges:
   id: xslnysgv6mzj
   type: challenge
   title: Testing Consul Intentions
-  teaser: Create Deny & Allow rules for accessing Postgres.
+  teaser: Create deny & allow rules for accessing Postgres.
   notes:
   - type: text
     contents: You can define a service-intentions configuration entry to create and
@@ -971,4 +973,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "2404824936552706464"
+checksum: "16882030152740552600"
