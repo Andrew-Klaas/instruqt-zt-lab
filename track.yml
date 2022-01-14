@@ -28,11 +28,10 @@ challenges:
   notes:
   - type: text
     contents: |-
-      The challenge of "Secure Introduction" or how to introduce an authentication token to applications is often one of the most difficult challenges in application & infrastructure deployments
-
-      "Auth methods" are the components in Vault that perform authentication and are responsible for assigning identity and a set of policies to a user. Having multiple auth methods enables you to use an auth method that makes the most sense for your use case of Vault and your organization.
-
-      In our example deployment, we will use the AWS auth method to authenticate our golang application.
+      "Secure Introduction" or "how to introduce an authentication token to applications" is often one of the most difficult challenges in application & infrastructure deployments.
+      Auth methods are components in Vault that perform authentication and are responsible for assigning identity and a set of policies to a user.
+      Using the right auth method for the application's underlying platform/cloud/etc. helps us solve secure introduction.
+      In this lab, we will use the AWS auth method to authenticate our golang application so it can retrieve database credentials.
   assignment: |-
     First, we need to authenticate Vault as an admin user. This will set your vault token at "~/.vault-token".
     ```
@@ -973,4 +972,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "16882030152740552600"
+checksum: "1802498020349935015"
