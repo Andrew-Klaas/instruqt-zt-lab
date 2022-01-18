@@ -105,6 +105,10 @@ challenges:
     type: service
     hostname: hashistack-server
     port: 8500
+  - title: Boundary UI
+    type: service
+    hostname: hashistack-server
+    port: 9200
   - title: Client 1
     type: terminal
     hostname: hashistack-client-1
@@ -974,4 +978,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "13961160548218814037"
+checksum: "15761227547162311413"
