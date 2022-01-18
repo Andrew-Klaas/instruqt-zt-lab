@@ -10,7 +10,7 @@ description: |-
   Consul will enforce mTLS and network policy.
   Finally, Boundary will secure remote access for human users like DBAs and Linux admins.
 
-  [Workshop Slides](t.ly/aGBQ)
+  [Workshop Slides](www.t.ly/aGBQ)
 icon: https://storage.googleapis.com/instruqt-hashicorp-tracks/logo/HashiCorp_Icon_Black.png
 tags:
 - Vault
@@ -980,4 +980,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "7004584376303591"
+checksum: "17030186928844520166"
