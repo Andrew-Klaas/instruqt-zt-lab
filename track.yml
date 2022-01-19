@@ -37,15 +37,20 @@ challenges:
 
       In this lab, we will use the AWS auth method to authenticate our golang application so it can retrieve database credentials.
   assignment: |-
-    First, we need to authenticate Vault as an admin user. This will set your vault token at "~/.vault-token".
+    Make sure you are on the server tab.
+
+    First, we need to authenticate to Vault as an admin user. This will set your vault token at "~/.vault-token".
     ```
     vault login -method=userpass username=vault password=vault
     ```
-    Once authenticated, view currently mounted auth methods
+    Once authenticated, view currently mounted auth methods with the following command.
     ```
     vault auth list
     ```
-    Note, the AWS auth method has already been mounted for you. You would use "Vault auth enable aws" to mount it yourself.
+    Note, the AWS auth method has already been mounted for you. You would use this command to mount it yourself.
+    ```
+    vault auth enable aws
+    ```
 
     The AWS auth method's documentation can be found here: https://www.vaultproject.io/docs/auth/aws
 
@@ -65,7 +70,7 @@ challenges:
     ```
     Next, configure a role for our application. The argument are explained in detail here: https://www.vaultproject.io/api/auth/aws#create-role
 
-    The role can be used to set time to lives for tokens, assosciate policies for Vault access, and set parameters on allowed IAM prinicpal ARNs.
+    A role can be used to set time-to-lives for tokens, associate policies for Vault access, and set parameters on allowed IAM prinicpal ARNs.
     ```
     vault write auth/aws/role/my-role-iam \
       auth_type=iam \
@@ -78,7 +83,7 @@ challenges:
     ```
     vault read auth/aws/role/my-role-iam
     ```
-    Test the login via CLI.
+    Test the login via vault CLI.
 
     ```
     vault login -method=aws role=my-role-iam
@@ -87,10 +92,11 @@ challenges:
 
     By having your applciation call Vault directly, you can ensure that credentials only live in memory and not on disk or envirnoment variables.
 
-    Lets take a look at lines X-Y in the "Goapp - Vault code" tab. This is the code used by our application to login to Vault's AWS auth method.
-    ```
-    cat /tmp/aws-vault-go-demo-tokenization/config/db.go
-    ```
+    Lets take a look at lines X-Y in the "Goapp - Vault code" tab. (Click on the file on the left hand side)
+
+    The "AWSLogin" function at line 91 contains the code used by our application to login to Vault's AWS auth method.
+
+    Next, let's learn how to create short lived database credentials.
   tabs:
   - title: Server
     type: terminal
@@ -131,15 +137,17 @@ challenges:
   notes:
   - type: text
     contents: |-
-      The database secrets engine generates database credentials dynamically based on configured roles. It works with a number of different databases through a plugin interface. There are a number of built-in database types, and an exposed framework for running custom database types for extendability. This means that services that need to access a database no longer need to hardcode credentials: they can request them from Vault, and use Vault's leasing mechanism to more easily roll keys. These are referred to as "dynamic roles" or "dynamic secrets".
+      The database secrets engine generates database credentials dynamically based on configured roles.
+      It works with a number of different databases through a plugin interface.
+      This means that services that need to access a database no longer need to hardcode credentials: they can request them from Vault, and use Vault's leasing mechanism to more easily roll keys. These are referred to as "dynamic roles" or "dynamic secrets".
       Since every service is accessing the database with unique credentials, it makes auditing much easier when questionable data access is discovered. You can track it down to the specific instance of a service based on the SQL username.
       Vault makes use of its own internal revocation system to ensure that users become invalid within a reasonable time of the lease expiring.
   assignment: |-
-    First, log back into Vault as our admin user.
+    First, log back into Vault as our admin user on the "Server" tab.
     ```
     vault login -method=userpass username=vault password=vault
     ```
-    List currently mounted secret engines
+    List currently mounted secret engines.
     ```
     vault secrets list
     ```
@@ -150,7 +158,7 @@ challenges:
     To configure the secret engine we needed to give Vault admin level credentials that enable creation and deletion of users.
     We also set the connection_url in this setup so Vault can locate the database.
 
-    You DO NOT need to run this command as hit has been done already.
+    Run the following command.
     ```
     vault write database/config/my-postgresql-database \
       plugin_name=postgresql-database-plugin \
@@ -160,8 +168,10 @@ challenges:
       password="password"
     ```
     Next we configure a secret engine role. In this step we can customize the creation_statements used by Vault for creating users.
+
     creation_statements are used to grant different permissions for users to read, write, etc. from databases.
-    We also set the database crednetial time-to-live and max time-to-live. After the TTL expires, the credential will be deleted from the databasde by Vault unless your applicaiton renews it.
+
+    We also set the database credential time-to-live and max time-to-live. After the TTL expires, the credential will be deleted from the databasde by Vault unless your applicaiton renews it.
     ```
     vault write database/roles/vault_go_demo \
       db_name=my-postgresql-database \
@@ -175,8 +185,8 @@ challenges:
     vault read database/creds/vault_go_demo
     ```
     You should see Vault's dynamically generated username and password for PostreSQL. Every read to this secret engine will create a unique credential.
-    As you can see, this improves auditability of applications as now every instance has a unique credential.
-    The lead_duration specificies how long the credential will last until Vault deletes its from the database. Your application can continuously renew this credential up until the configures max TTL.
+
+    Now let's understand how Vault can be used to encrypt customer PII data such as credit card or social security numbers.
   tabs:
   - title: Server
     type: terminal
@@ -213,10 +223,10 @@ challenges:
   notes:
   - type: text
     contents: The Transform secrets engine handles secure data transformation and
-      tokenization against the provided secrets. Transformation methods encompass
-      NIST vetted cryptographic standards such as format-preserving encryption (FPE)
-      via FF3-1 to encode your secrets while maintaining the data format and length.
-      In addition, it can also perform pseudonymous transformations of the data through
+      tokenization against provided secrets. Transformation methods encompass NIST
+      vetted cryptographic standards such as format-preserving encryption (FPE) via
+      FF3-1 to encode your secrets while maintaining the data format and length. In
+      addition, it can also perform pseudonymous transformations of the data through
       other means, such as masking.
   assignment: |-
     The Transform secret engine has already been mounted for you
@@ -226,26 +236,20 @@ challenges:
     We first need to configure the secret engine to use tokenization.
     Our golang application will be leveraging tokenization to protect customer data and meet PCI compliance of non-repudiation.
 
-    Lets configure a named role in Vault for our secret engine.
+    Lets configure a named role in Vault for our secret engine. We also declare a transformation of name "ssn" we will define that in the next step.
     ```
     vault write transform/role/vault_go_demo transformations=ssn
     ```
-    Next, define a transformation. Transformations hold information about a particular transformation. It contains information about the type of transformation that we want to perform, the template that it should use for value detection, and other transformation-specific values such as the tweak source or the masking character to use.
+    Transformations contain information about the type of transformation that we want to perform, the template that it should use for value detection, and other transformation-specific values such as the tweak source or the masking characters to use.
+    In this case we are using tokenization instead of format preserving encryption so the configuration is more simple.
 
+    Define the transformation.
     ```
     vault write transform/transformations/tokenization/ssn \
       allowed_roles=vault_go_demo \
       max_ttl=24h
     ```
-    Verify the role.
-    ```
-    vault read transform/role/vault_go_demo
-    ```
-    Verify the transformation
-    ```
-    vault read transform/transformations/tokenization/ssn
-    ```
-    Test tokenizationg (Encoding) a value.
+    Now we can test tokenizing (called "encoding") a value.
     ```
     vault write transform/encode/vault_go_demo value=1111-2222-3333-4444 transformation=ssn
     ```
@@ -253,6 +257,9 @@ challenges:
     ```
     vault write transform/decode/vault_go_demo value=$(ENCODED_VAULT) transformation=ssn
     ```
+    You should see the original value in plaintext.
+
+    Next, we will test our web application.
   tabs:
   - title: Server
     type: terminal
@@ -295,16 +302,19 @@ challenges:
     contents: With our application integrated with Vault, we can now test creating
       a customer record.
   assignment: |-
-    Switch to the Client 1 terminal
+    Switch to the Client 1 terminal and restart the application.
+
+    TODO: You may need to run this command twice.
     ```
     systemctl start goapp
     ```
+    Switch to the "App UI" tab.
+
     Now test the App UI by adding a customer Record.
 
     Navigate to the "Add Record" button and fill in example data. Once submitted, you will be redirected to the applications view of all detokenized data.
 
-    Next switch to the "Database View" tab. You should see that your new record's SSN has been tokenized.
-
+    Next, switch to the "Database View" tab. You should see that your new record's SSN has been tokenized. This is what a logged in database user would see if inspecting Postgres.
     If anyone where to compromise your database, they now would be unable to reverse this data.
 
     Further Reading: Our application should be leveraging TLS certificates for secure connections.
@@ -346,6 +356,7 @@ challenges:
   - type: text
     contents: |-
       Consul is a service networking solution to automate network configurations, discover services, and enable secure connectivity across any cloud or runtime.
+
       We will first get to know Consul by exploring the UI.
   assignment: |-
     Consul's UI allows you to view and interact with Consul via a graphical user interface, which can lower the barrier of entry for new users, and ease troubleshooting.
@@ -358,6 +369,8 @@ challenges:
     The "Nodes" section shows registered nodes, both Consul servers and clients. You can drill down further to find a nodes IP address, health checks, metadata, and other information.
 
     The "Services" section shows registered services and their sidecar proxies. You can drill down further to find network topologies, assosciated intentions, the number of instances of an application, and other information.
+
+    As an example, click on the goapp service. The topology diagram should show a connection to the backend postgres service.
 
     Additionally, you can view and update the following information through the Consul UI:
 
@@ -411,7 +424,7 @@ challenges:
     cd /etc/consul.d/
     cat consul.hcl
     ```
-    This Agent is running in Client mode. The configuration is used to set several options like which address to bind to, where the Consul Servers are that we want to join, and other info like log levels.
+    This consul agent is running in "client" mode. The configuration is used to set several options like which address to bind to, where the Consul Servers are that we want to join, and other info like log levels.
     ```
     datacenter = "dc1"
     retry_join = ["hashistack-server"]
@@ -431,7 +444,7 @@ challenges:
     ```
     cat goapp.hcl
     ```
-    This file is used to define the name/ports of the service, how to configure a sidecar proxy, health checks, etc.
+    This file is used to define the name/ports of the service we want Consul to register & monitor, how to configure a sidecar proxy, health checks, etc.
 
     We will discuss the Connect stanza in more detail in the next section.
     ```
@@ -481,7 +494,7 @@ challenges:
       }
     }
     ```
-    You can view all services registered in Consul via the following command
+    You can view all services registered in Consul via the following command.
     ```
     consul catalog services
     ```
@@ -533,6 +546,12 @@ challenges:
     dig postgres.service.consul
     ```
     You should see the IP address of the postgres database returned!
+
+    Example:
+    ```
+    ''; ANSWER SECTION:
+    postgres.service.consul. 0      IN      A       10.132.0.184
+    ```
   tabs:
   - title: Server
     type: terminal
@@ -569,19 +588,22 @@ challenges:
   notes:
   - type: text
     contents: |-
-      Consul Intentions define access control for services via Connect and are used to control which services may establish connections or make requests. Intentions can be managed via the API, CLI, or UI.
+      Consul Intentions define access control for services via Connect and are used to control which services may establish connections or make requests.
+
       Intentions are enforced on inbound connections or requests by the proxy or within a natively integrated application.
+
       Depending upon the protocol in use by the destination service, you can define intentions to control Connect traffic authorization either at networking layer 4 (e.g. TCP) and application layer 7 (e.g. HTTP)
   assignment: |2-
 
-    Let's look at our webapp and database service definitions to understand how connect is configured.
+    Let's look at our webapp and database service definitions to understand how Connect is configured.
 
-    Switch to the "Client1" tab. We will review the service configuration again with a focus on connect.
+    Switch to the "Client 1" tab. We will review the service configuration again with a focus on connect.
     ```
     cd /etc/consul.d/
     cat goapp.hcl
     ```
-    The Connect stanza holds configuration for this Services Side Car proxy.
+    The Connect stanza holds configuration for this service's sidecar proxy.
+
     First, note the sidecar stanza within the connect stanza.
 
     ```
@@ -599,17 +621,18 @@ challenges:
     }
     ```
 
-    Connect proxies are typically deployed as "sidecars" that run on the same node as the single service instance that they handle traffic for. They might be on the same VM or running as a separate container in the same network namespace.
+    Connect proxies are typically deployed as "sidecars" that run on the same node as the service instance that they handle traffic for. They might be on the same VM or running as a separate container in the same network namespace.
     In this case, we will be leveraging Envoy as the sidecar proxy.
 
     Next we define proxy "upstreams". These upstreams determine which backend services this local webapp/proxy is able to direct traffic too.
     Within the upstreams stanza we define the destination service (regsistred in Consul) and a local port to bind too.
-    Then our service can connect to the localport instead of a remote address.
+
+    Then our service will connect to that configured local port instead of a remote address.
     Note: Consul also supports Transparent Proxying - https://www.consul.io/docs/connect/transparent-proxy
 
-    In this frontend webapp's case. You can see we configured the proxy to direct traffic to the backend postgres database on the local port 5432.
+    In our frontend webapp's case, we configured the proxy to direct traffic to the backend postgres database on the local port 5432.
 
-    Next, switch to the "Client2" tab
+    Next, switch to the "Client 2" tab
     ```
     cd /etc/consul.d/
     cat postgres.hcl
@@ -674,7 +697,11 @@ challenges:
       also perform some intention-related tasks using the API and CLI commands. Refer
       to the API and CLI documentation for details.
   assignment: |-
-    First, let's deny accesss from the webapp to the database.
+    Switch to the "Client 1" tab.
+
+    First, let's deny access from the webapp to the database. we define the following service-intention configuration as code.
+
+    The intention will specifices that connections from the source service "goapp" will be denied to the backend "Name" postgres.
     ```
     cat << EOF > ~/config-intentions-postgres-deny.hcl
     Kind = "service-intentions"
@@ -691,14 +718,17 @@ challenges:
     consul config write config-intentions-postgres-deny.hcl
     ```
     Consul Connect/Envoy will not affect existing connections so we will need to restart the application for the changes to take effect.
-    Switch to the Client 1 tab and restart the application.
+
+    Restart the application from the Client 1 tab.
     ```
     systemctl restart goapp
     ```
     You should see that the webapp failed to start.
+    Note: try adding a record to see a failure as the webpage may be cached.
 
-    Now let's enable traffic between the webapp and postgres so our connection succeeds.
-    From the client 1 tab, write the following servic eintentions to Consul.
+    Switch back to the "Client 1" tab.
+
+    Now, let's enable traffic between the webapp and postgres so our connection succeeds.
     ```
     cat << EOF > ~/config-intentions-postgres-allow.hcl
     Kind = "service-intentions"
@@ -721,6 +751,8 @@ challenges:
     systemctl restart goapp
     ```
     You should see the webapp successfully start now as it was able to connect and initalize the database.
+
+    Great work! With our application and database talking over a secure connection, we can now move on to securing human access to these resources.
   tabs:
   - title: Server
     type: terminal
@@ -763,18 +795,20 @@ challenges:
 
       This feature enables Boundary as a credential broker for infrastructure targets by binding credentials with user sessions, and surfacing those credentials during session initialization.
   assignment: |-
-    First, login to Vault on using the "Server" tab
+    Login to Vault on using the "Server" tab
     ```
     vault login -method=userpass username=vault password=vault
     ```
     Next, we will configure Boundary using HashiCorp Terraform.
+
     Terraform is an open-source infrastructure as code software tool that enables you to safely and predictably create, change, and improve infrastructure.
+
     Change into the terraform-boundary directory where our Terraform config is stored
     ```
     cd terraform-boundary/
     cat boundary-controller-policy.hcl
     ```
-    Boundary needs to lookup, renew, and revoke tokens and leases in order to broker credentials properly.
+    Boundary needs to lookup, renew, and revoke tokens and leases in order to broker credentials from Vault properly.
 
     Next, we will create a Vault token for the Boundary Server to use.
 
@@ -789,6 +823,8 @@ challenges:
       -renewable=true
     ```
 
+    Save the token from above. You will pass this value to Terraform in the next step.
+
     Initialize terraform and run a dry-run or plan.
     ```
     #feed token to terraform
@@ -798,6 +834,11 @@ challenges:
     Once satisified, apply the configuration.
     ```
     terraform apply --auto-approve;
+    ```
+
+    Once Terraform successfully configures Boundary, we can move on to the next challenge.
+    ```
+    apply complete! Resources: 20 added, 0 changed, 0 destroyed.
     ```
   tabs:
   - title: Server
@@ -838,10 +879,9 @@ challenges:
   teaser: Get familiar with Boundary projects and targets.
   notes:
   - type: text
-    contents: As with many other HashiCorp tools, Boundary supports CLI, API, and
-      a GUI for interacting with the service. In this exercise you will explore the
-      GUI and find available targets to securely access. Boundaries domain model is
-      explained in detail here -> https://www.boundaryproject.io/docs/concepts/domain-model
+    contents: |-
+      As with many other HashiCorp tools, Boundary supports CLI, API, and a GUI for interacting with the service. In this exercise you will explore the GUI and find available targets to securely access.
+      Boundaries domain model is explained in detail here -> https://www.boundaryproject.io/docs/concepts/domain-model
       A separate tutorial on domains is also here -> https://learn.hashicorp.com/tutorials/boundary/manage-intro?in=boundary/basic-administration
   assignment: |-
     Login to Boundary in the "Boundary UI" tab
@@ -849,23 +889,30 @@ challenges:
     username: admin
     password: password
     ```
-    Boundary's top level domain unit is called an "Org" or "Organization" (they are also called Scopes)
-    Scopes are a foundational part of Boundary. They allow users to partition resources and assign ownership of resources to principals. There are three types of scopes within Boundary:
+    Boundary's top level domain unit is called an "Org" or "Organization" (they are also called Scopes).
+
+    Scopes are a foundational part of Boundary. They allow users to partition resources and assign ownership of resources to principals.
+
     Find more details at https://learn.hashicorp.com/tutorials/boundary/manage-scopes?in=boundary/basic-administration
 
-    First, navigate to the corp_one Org. This is where our resources are defined.
+    First, navigate to the corp_one Org. This is where our resources were defined and configured in the last challenge.
 
-    Within Scopes are projects. Projects contain targets and host catalogs (the actual resources/VMs/databases/APIs we are securing)
+    Within Scopes are Projects. Projects contain Targets and Host Catalogs (the actual resources/VMs/databases/APIs we are securing)
 
     Click on "core_infra". Then click "Targets" on the left hand side.
 
-    Now copy the Postgres_server Target. We will access this in the next challenge so save the value.
+    Copy the Postgres_server Target. We will access this in the next challenge so save the value.
+    It should look like:
+    ```
+    ttcp_tGJJUmCsrP
+    ```
 
     Set an environment variable on the "Server" tab.
     ```
     #Copy the postgres_server target from the corp_one org
     export POSTGRES_TARGET=
     ```
+    We can now move on to testing Boundary for secure access.
   tabs:
   - title: Server
     type: terminal
@@ -923,7 +970,7 @@ challenges:
     ```
     boundary targets authorize-session -id  $POSTGRES_TARGET
     ```
-    The Boundary CLI will automatically use the above information.
+    The Boundary CLI will automatically use the above information and the returned dynamic database credentials.
     We can now connect to the database!
 
     TODO: (You may need to run this twice as it errors on the first call)
@@ -948,6 +995,16 @@ challenges:
     ```
     boundary connect ssh -target-id $SSH_TARGET
     ```
+
+    Congratulations! You've successfully learned out to secure application passwords, customer data, networking between services, and access to infrastructure resources!
+
+    To continue on your journey, please refer to the following docs for more information on use-cases, deployments, etc.
+
+    Vault: https://www.vaultproject.io/docs
+
+    Consul: https://www.consul.io/docs
+
+    Boundary: https://www.boundaryproject.io/docs
   tabs:
   - title: Server
     type: terminal
@@ -980,4 +1037,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "7564294223114430234"
+checksum: "4951318842051505080"
