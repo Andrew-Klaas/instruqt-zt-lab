@@ -973,8 +973,7 @@ challenges:
     The Boundary CLI will automatically use the above information and the returned dynamic database credentials.
     We can now connect to the database!
 
-    TODO: (You may need to run this twice as it errors on the first call)
-
+    You may need to run this twice as it can error on the first call.
     ```
     boundary connect postgres -target-id $POSTGRES_TARGET --dbname vault_go_demo
     ```
@@ -991,7 +990,7 @@ challenges:
     export SSH_TARGET=
     ```
     Then connect to the host.
-    TODO: (you may need to run this twice as it errors on the first call)
+    You may need to run this twice as it can error on the first call.
     ```
     boundary connect ssh -target-id $SSH_TARGET
     ```
@@ -1037,4 +1036,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "4951318842051505080"
+checksum: "1954667099216681557"
