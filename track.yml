@@ -36,6 +36,14 @@ challenges:
       Using the right auth method for the application's underlying platform/cloud/etc. helps us solve secure introduction.
 
       In this lab, we will use the AWS auth method to authenticate our golang application so it can retrieve database credentials.
+  - type: text
+    contents: |-
+      This diagram shows our overall lab archtecture. There are 3 nodes: Server, Client 1, and Client 2. 
+
+      Client 1 contains our Go application. Client 2 hosts a Postgres Database. and Client 3 contains the Consul, Vault, and Boundary Servers.
+
+      We will first work on authenticating our applicationt to Vault.
+     <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/0-auth.png"
   assignment: |-
     Make sure you are on the server tab.
 
