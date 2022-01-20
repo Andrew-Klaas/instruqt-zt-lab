@@ -1,4 +1,4 @@
-slug: klaas-zt-sandbox
+slug: app-sec-vault-consul-boundary
 id: mjhgbj3a3yyb
 version: 0.0.1
 type: track
@@ -1063,4 +1063,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "6710047692284217174"
+checksum: "11292890204976372546"
