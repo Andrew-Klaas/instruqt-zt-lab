@@ -38,12 +38,13 @@ challenges:
       In this lab, we will use the AWS auth method to authenticate our golang application so it can retrieve database credentials.
   - type: text
     contents: |-
-      This diagram shows our overall lab archtecture. There are 3 nodes: Server, Client 1, and Client 2. 
+      This diagram shows our overall lab archtecture. There are 3 nodes: Server, Client 1, and Client 2.
 
       Client 1 contains our Go application. Client 2 hosts a Postgres Database. and Client 3 contains the Consul, Vault, and Boundary Servers.
 
-      We will first work on authenticating our applicationt to Vault.
-     <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/0-auth.png"
+      We will first work on authenticating our application to Vault.
+
+      <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/0-auth.png" width=800px height=400px>
   assignment: |-
     Make sure you are on the server tab.
 
@@ -150,6 +151,9 @@ challenges:
       This means that services that need to access a database no longer need to hardcode credentials: they can request them from Vault, and use Vault's leasing mechanism to more easily roll keys. These are referred to as "dynamic roles" or "dynamic secrets".
       Since every service is accessing the database with unique credentials, it makes auditing much easier when questionable data access is discovered. You can track it down to the specific instance of a service based on the SQL username.
       Vault makes use of its own internal revocation system to ensure that users become invalid within a reasonable time of the lease expiring.
+  - type: text
+    contents: <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/1-dbsecrets.png"
+      width=800px height=400px>
   assignment: |-
     First, log back into Vault as our admin user on the "Server" tab.
     ```
@@ -236,6 +240,9 @@ challenges:
       FF3-1 to encode your secrets while maintaining the data format and length. In
       addition, it can also perform pseudonymous transformations of the data through
       other means, such as masking.
+  - type: text
+    contents: <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/2-tokenization.png"
+      width=800px height=400px>
   assignment: |-
     The Transform secret engine has already been mounted for you
     ```
@@ -426,6 +433,9 @@ challenges:
     contents: |-
       One of the major use cases for Consul is service discovery. Consul provides a DNS interface that downstream services can use to find the IP addresses of their upstream dependencies.
       Consul knows where these services are located because each service registers with its local Consul client. Operators can register services manually, configuration management tools can register services when they are deployed, or container orchestration platforms can register services automatically via integrations.
+  - type: text
+    contents: <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/3-connect.png"
+      width=800px height=400px>
   assignment: |-
     Switch to the Client 1 terminal. Let's check the Consul Agent Config first.
     ```
@@ -601,6 +611,9 @@ challenges:
       Intentions are enforced on inbound connections or requests by the proxy or within a natively integrated application.
 
       Depending upon the protocol in use by the destination service, you can define intentions to control Connect traffic authorization either at networking layer 4 (e.g. TCP) and application layer 7 (e.g. HTTP)
+  - type: text
+    contents: <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/4-intention.png"
+      width=800px height=400px>
   assignment: |2-
 
     Let's look at our webapp and database service definitions to understand how Connect is configured.
@@ -802,6 +815,9 @@ challenges:
       Boundary 0.4.0 adds a Vault integration for the brokering of Vault secrets to Boundary clients via the command line and desktop clients for use in their Boundary sessions.
 
       This feature enables Boundary as a credential broker for infrastructure targets by binding credentials with user sessions, and surfacing those credentials during session initialization.
+  - type: text
+    contents: <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/5-boundary-vault.png"
+      width=800px height=400px>
   assignment: |-
     Login to Vault on using the "Server" tab
     ```
@@ -962,6 +978,9 @@ challenges:
   - type: text
     contents: We will now simulate what short-lived database access to PostgreSQL
       would look like for an end user.
+  - type: text
+    contents: <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/6-access.png"
+      width=800px height=400px>
   assignment: |-
     Login to Boundary via the CLI on the "Server" tab.
     ```
@@ -1044,4 +1063,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "1954667099216681557"
+checksum: "6710047692284217174"
