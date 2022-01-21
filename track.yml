@@ -69,7 +69,7 @@ challenges:
     ```
     The mount's already been configured for you as well.
     To do so in your own environment, you need to configure the auth method with suitable AWS credentials to perform actions on IAM Users.
-    Our recommended AWS policy is here: https://www.vaultproject.io/docs/auth/aws#recommend
+    Our recommended AWS IAM policy is here: https://www.vaultproject.io/docs/auth/aws#recommend
 
     You DO NOT need to run this step.
     ```
@@ -101,7 +101,7 @@ challenges:
 
     By having your applciation call Vault directly, you can ensure that credentials only live in memory and not on disk or envirnoment variables.
 
-    Lets take a look at lines X-Y in the "Goapp - Vault code" tab. (Click on the file on the left hand side)
+    Lets take at the "Goapp - Vault code" tab. (Click on the file on the left hand side)
 
     The "AWSLogin" function at line 91 contains the code used by our application to login to Vault's AWS auth method.
 
@@ -147,12 +147,16 @@ challenges:
   - type: text
     contents: |-
       The database secrets engine generates database credentials dynamically based on configured roles.
-      It works with a number of different databases through a plugin interface.
+
       This means that services that need to access a database no longer need to hardcode credentials: they can request them from Vault, and use Vault's leasing mechanism to more easily roll keys. These are referred to as "dynamic roles" or "dynamic secrets".
+
       Since every service is accessing the database with unique credentials, it makes auditing much easier when questionable data access is discovered. You can track it down to the specific instance of a service based on the SQL username.
       Vault makes use of its own internal revocation system to ensure that users become invalid within a reasonable time of the lease expiring.
   - type: text
-    contents: <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/1-dbsecrets.png"
+    contents: |-
+      In this challenge we will configure Vault to create lease priviledged Postgres credentials
+
+      <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/1-dbsecrets.png"
       width=800px height=400px>
   assignment: |-
     First, log back into Vault as our admin user on the "Server" tab.
@@ -167,7 +171,7 @@ challenges:
     ```
     vault read database/config/my-postgresql-database
     ```
-    To configure the secret engine we needed to give Vault admin level credentials that enable creation and deletion of users.
+    To configure the secret engine we need to give Vault admin level credentials that enable creation and deletion of users.
     We also set the connection_url in this setup so Vault can locate the database.
 
     Run the following command.
@@ -181,9 +185,9 @@ challenges:
     ```
     Next we configure a secret engine role. In this step we can customize the creation_statements used by Vault for creating users.
 
-    creation_statements are used to grant different permissions for users to read, write, etc. from databases.
+    Creation_statements are used to grant different permissions for users to read, write, etc. from databases.
 
-    We also set the database credential time-to-live and max time-to-live. After the TTL expires, the credential will be deleted from the databasde by Vault unless your applicaiton renews it.
+    We also set the database credential time-to-live and max time-to-live. After the TTL expires, the credential will be deleted from the database by Vault unless your applicaiton renews it.
     ```
     vault write database/roles/vault_go_demo \
       db_name=my-postgresql-database \
@@ -198,7 +202,7 @@ challenges:
     ```
     You should see Vault's dynamically generated username and password for PostreSQL. Every read to this secret engine will create a unique credential.
 
-    Now let's understand how Vault can be used to encrypt customer PII data such as credit card or social security numbers.
+    Next, let's understand how Vault can be used to encrypt customer PII data such as credit card or social security numbers.
   tabs:
   - title: Server
     type: terminal
@@ -234,14 +238,17 @@ challenges:
   teaser: Protect critical customer data.
   notes:
   - type: text
-    contents: The Transform secrets engine handles secure data transformation and
-      tokenization against provided secrets. Transformation methods encompass NIST
-      vetted cryptographic standards such as format-preserving encryption (FPE) via
-      FF3-1 to encode your secrets while maintaining the data format and length. In
-      addition, it can also perform pseudonymous transformations of the data through
-      other means, such as masking.
+    contents: |-
+      The Transform secrets engine handles secure data transformation and tokenization against provided secrets.
+
+      Transformation methods encompass NIST vetted cryptographic standards such as format-preserving encryption (FPE) via FF3-1 to encode your secrets while maintaining the data format and length.
+
+      In addition, it can also perform pseudonymous transformations of the data through other means, such as masking.
   - type: text
-    contents: <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/2-tokenization.png"
+    contents: |-
+      Our application will send plaintext customer data to Vault to be encrypted and returned before writing to Postgres.
+
+      <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/2-tokenization.png"
       width=800px height=400px>
   assignment: |-
     The Transform secret engine has already been mounted for you
@@ -249,14 +256,14 @@ challenges:
     vault secrets list
     ```
     We first need to configure the secret engine to use tokenization.
-    Our golang application will be leveraging tokenization to protect customer data and meet PCI compliance of non-repudiation.
+    Our golang application will be leveraging tokenization to protect customer data and meet PCI compliance of non-repudiation (Non reversible).
 
     Lets configure a named role in Vault for our secret engine. We also declare a transformation of name "ssn" we will define that in the next step.
     ```
     vault write transform/role/vault_go_demo transformations=ssn
     ```
-    Transformations contain information about the type of transformation that we want to perform, the template that it should use for value detection, and other transformation-specific values such as the tweak source or the masking characters to use.
-    In this case we are using tokenization instead of format preserving encryption so the configuration is more simple.
+    "Transformations" contain information about the type of data transformation that we want to perform, the template that it should use for value detection, and other transformation-specific values such as the tweak source or the masking characters to use.
+    In this case we are using tokenization instead of format preserving encryption so the configuration is more simple. (No special formatting required)
 
     Define the transformation.
     ```
@@ -317,9 +324,9 @@ challenges:
     contents: With our application integrated with Vault, we can now test creating
       a customer record.
   assignment: |-
-    Switch to the Client 1 terminal and restart the application.
+    Switch to the "Client 1" terminal and restart the application.
 
-    TODO: You may need to run this command twice.
+    NOTE:Y ou may need to run this command twice due to a DNS issue.
     ```
     systemctl start goapp
     ```
@@ -432,17 +439,22 @@ challenges:
   - type: text
     contents: |-
       One of the major use cases for Consul is service discovery. Consul provides a DNS interface that downstream services can use to find the IP addresses of their upstream dependencies.
-      Consul knows where these services are located because each service registers with its local Consul client. Operators can register services manually, configuration management tools can register services when they are deployed, or container orchestration platforms can register services automatically via integrations.
+      Consul knows where these services are located because each service registers with its local Consul client.
+
+      Operators can register services manually, configuration management tools can register services when they are deployed, or container orchestration platforms can register services automatically via integrations.
   - type: text
-    contents: <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/3-connect.png"
+    contents: |-
+      In this challenge we will leverage Consul for registering our application and database services.
+
+      <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/3-connect.png"
       width=800px height=400px>
   assignment: |-
-    Switch to the Client 1 terminal. Let's check the Consul Agent Config first.
+    Switch to the "Client 1" terminal. Let's check the Consul Agent Config first.
     ```
     cd /etc/consul.d/
     cat consul.hcl
     ```
-    This consul agent is running in "client" mode. The configuration is used to set several options like which address to bind to, where the Consul Servers are that we want to join, and other info like log levels.
+    This consul agent is running in "client" mode. The configuration is used to set several options like which address to bind to, where the Consul servers are that we want to join, and other info like log levels.
     ```
     datacenter = "dc1"
     retry_join = ["hashistack-server"]
@@ -553,6 +565,7 @@ challenges:
   - type: text
     contents: |-
       One of the primary query interfaces for Consul is DNS. The DNS interface allows applications to make use of service discovery without any high-touch integration with Consul.
+
       For example, instead of making HTTP API requests to Consul, a host can use the DNS server directly via name lookups like redis.service.us-east-1.consul. This query automatically translates to a lookup of nodes that provide the redis service, are located in the us-east-1 datacenter, and have no failing health checks. It's that simple!
   assignment: |-
     Switch to the Client 1 tab.
@@ -567,7 +580,7 @@ challenges:
 
     Example:
     ```
-    ''; ANSWER SECTION:
+    ;; ANSWER SECTION:
     postgres.service.consul. 0      IN      A       10.132.0.184
     ```
   tabs:
@@ -612,7 +625,10 @@ challenges:
 
       Depending upon the protocol in use by the destination service, you can define intentions to control Connect traffic authorization either at networking layer 4 (e.g. TCP) and application layer 7 (e.g. HTTP)
   - type: text
-    contents: <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/4-intention.png"
+    contents: |-
+      In this challenge, we configure Consul Service Mesh to connect and authorize connections between services
+
+      <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/4-intention.png"
       width=800px height=400px>
   assignment: |2-
 
@@ -715,8 +731,7 @@ challenges:
   - type: text
     contents: You can define a service-intentions configuration entry to create and
       manage intentions, as well as manage intentions through the Consul UI. You can
-      also perform some intention-related tasks using the API and CLI commands. Refer
-      to the API and CLI documentation for details.
+      also perform some intention-related tasks using the API and CLI commands.
   assignment: |-
     Switch to the "Client 1" tab.
 
@@ -768,6 +783,8 @@ challenges:
     You can see we've changed the Action to "allow".
 
     Consul Connect/Envoy will not affect existing connections so we will need to restart the application for the changes to take effect.
+
+    You may need to restart a second time.
     ```
     systemctl restart goapp
     ```
@@ -816,7 +833,10 @@ challenges:
 
       This feature enables Boundary as a credential broker for infrastructure targets by binding credentials with user sessions, and surfacing those credentials during session initialization.
   - type: text
-    contents: <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/5-boundary-vault.png"
+    contents: |-
+      We will configure Boundary to retrieve dynamic credentials from Vault in this challenge.
+
+      <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/5-boundary-vault.png"
       width=800px height=400px>
   assignment: |-
     Login to Vault on using the "Server" tab
@@ -905,8 +925,8 @@ challenges:
   - type: text
     contents: |-
       As with many other HashiCorp tools, Boundary supports CLI, API, and a GUI for interacting with the service. In this exercise you will explore the GUI and find available targets to securely access.
+
       Boundaries domain model is explained in detail here -> https://www.boundaryproject.io/docs/concepts/domain-model
-      A separate tutorial on domains is also here -> https://learn.hashicorp.com/tutorials/boundary/manage-intro?in=boundary/basic-administration
   assignment: |-
     Login to Boundary in the "Boundary UI" tab
     ```
@@ -931,7 +951,7 @@ challenges:
     ttcp_tGJJUmCsrP
     ```
 
-    Set an environment variable on the "Server" tab.
+    Set an environment variable on the "Server" tab with your copied target id.
     ```
     #Copy the postgres_server target from the corp_one org
     export POSTGRES_TARGET=
@@ -979,8 +999,9 @@ challenges:
     contents: We will now simulate what short-lived database access to PostgreSQL
       would look like for an end user.
   - type: text
-    contents: <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/6-access.png"
-      width=800px height=400px>
+    contents: |-
+      In this challenge, you will securely access PostgreSQL via Boundary.
+      <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/6-access.png" width=800px height=400px>
   assignment: |-
     Login to Boundary via the CLI on the "Server" tab.
     ```
@@ -1063,4 +1084,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "11292890204976372546"
+checksum: "12954628143443190736"

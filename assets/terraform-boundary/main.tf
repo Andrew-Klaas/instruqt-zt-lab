@@ -157,7 +157,7 @@ resource "boundary_target" "backend_servers_ssh" {
   scope_id     = boundary_scope.core_infra.id
   default_port = 22
 
-  host_set_ids = [
+  host_source_ids = [
     boundary_host_set.backend_servers_ssh.id
   ]
 }
@@ -173,7 +173,7 @@ resource "boundary_target" "backend_servers_postgres" {
     boundary_credential_library_vault.postgres_cred_library.id
   ]
 
-  host_set_ids = [
+  host_source_ids = [
     boundary_host_set.backend_servers_ssh.id
   ]
 }
@@ -186,7 +186,7 @@ resource "boundary_target" "app_servers_ssh" {
   scope_id     = boundary_scope.core_infra.id
   default_port = 22
 
-  host_set_ids = [
+  host_source_ids = [
     boundary_host_set.app_servers_ssh.id
   ]
 }
