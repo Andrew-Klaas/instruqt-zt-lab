@@ -56,8 +56,9 @@ challenges:
     ```
     vault auth list
     ```
-    Note, the AWS auth method has already been mounted for you. You would use this command to mount it yourself.
+    NOTE, the AWS auth method has already been mounted for you. You would use this command to mount it yourself.
     ```
+    #The AWS Secret Engine has already been mounted for you. This will return a 400 error.
     vault auth enable aws
     ```
 
@@ -273,11 +274,16 @@ challenges:
     ```
     Now we can test tokenizing (called "encoding") a value.
     ```
-    vault write transform/encode/vault_go_demo value=1111-2222-3333-4444 transformation=ssn
+    export ENCODED_VAULT=$(vault write -format=json \
+      transform/encode/vault_go_demo value=1111-2222-3333-4444 \
+      transformation=ssn \
+      | jq -r '.data.encoded_value')
+    
+    echo $ENCODED_VAULT
     ```
     Next, decode the tokenized value from above.
     ```
-    vault write transform/decode/vault_go_demo value=$(ENCODED_VAULT) transformation=ssn
+    vault write transform/decode/vault_go_demo value="${ENCODED_VAULT}" transformation=ssn
     ```
     You should see the original value in plaintext.
 
@@ -867,15 +873,14 @@ challenges:
       -renewable=true
     ```
 
-    Save the token from above. You will pass this value to Terraform in the next step.
+    Save the "token" from the above output. You will pass this value to Terraform in the "apply" step below.
 
-    Initialize terraform and run a dry-run or plan.
+    Initialize terraform.
     ```
     #feed token to terraform
     terraform init;
-    terraform plan;
     ```
-    Once satisified, apply the configuration.
+    Once satisified, apply the configuration. You will need to pass the Vault token from above to the Terraform CLI command.
     ```
     terraform apply --auto-approve;
     ```
