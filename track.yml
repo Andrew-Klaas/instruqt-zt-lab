@@ -56,7 +56,7 @@ challenges:
     ```
     vault auth list
     ```
-    NOTE: the AWS auth method has already been mounted for you. You would use this command to mount it yourself. 
+    NOTE: the AWS auth method has already been mounted for you. You would use this command to mount it yourself.
     ```
     #The AWS Secret Engine has already been mounted for you. This will return a 400 error.
     vault auth enable aws
@@ -140,7 +140,7 @@ challenges:
     contents: |-
       Vault's database secrets engine generates short-lived credentials dynamically based on configured roles.
 
-      Services no longer need hardcoded or static credentials. They can request the secret from Vault, and use Vault's leasing mechanism to keep those credentials renewed or to pull new ones after expiration.  
+      Services no longer need hardcoded or static credentials. They can request the secret from Vault, and use Vault's leasing mechanism to keep those credentials renewed or to pull new ones after expiration.
 
       Since every service is accessing the database with unique credentials, this makes auditing easier when questionable data access is discovered. You can track it down to the specific instance of a service based on the SQL username.
   - type: text
@@ -1017,4 +1017,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "452267618816537145"
+checksum: "3582602973435691371"
