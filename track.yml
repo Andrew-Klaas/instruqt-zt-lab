@@ -5,10 +5,10 @@ type: track
 title: Application Security with Vault, Consul, & Boundary
 teaser: Leverage the HashiCorp stack to secure application infrastructure
 description: |-
-  This workshop will provide hands on experience securing an application stack utilizing several tools from the HashiCorp suite.
+  This workshop will provide hands on experience securing an application stack with several HashiCorp tools.
   Vault will be use to secure application credentials and customer data.
   Consul will enforce mTLS and network policy.
-  Finally, Boundary will secure remote access for human users like DBAs and Linux admins.
+  Finally, Boundary will secure remote access for human users such as DBAs and Linux admins.
 
   [Workshop Slides](https://docs.google.com/presentation/d/1og3T3rfXtMiaJChL2TEBkUH01Tz5vDSXJR1PDegs1Po/edit#slide=id.g104306241d1_3_0)
 icon: https://storage.googleapis.com/instruqt-hashicorp-tracks/logo/HashiCorp_Icon_Black.png
@@ -33,16 +33,16 @@ challenges:
       "Secure Introduction" or "how to introduce an authentication token to applications" is often one of the most difficult challenges in application & infrastructure deployments.
 
       Auth methods are components in Vault that perform authentication and are responsible for assigning identity and a set of policies to a user.
-      Using the right auth method for the application's underlying platform/cloud/etc. helps us solve secure introduction.
+      Using the right auth method for the application's underlying platform/cloud helps us solve secure introduction.
 
-      In this lab, we will use the AWS auth method to authenticate our golang application so it can retrieve database credentials.
+      In this lab, we will use the AWS auth method to authenticate a Golang application so it can retrieve database credentials from Vault.
   - type: text
     contents: |-
-      This diagram shows our overall lab archtecture. There are 3 nodes: Server, Client 1, and Client 2.
+      This diagram shows our overall lab archtecture. There are 3 nodes: Server, Client-1, and Client-2.
 
-      Client 1 contains our Go application. Client 2 hosts a Postgres Database. and Client 3 contains the Consul, Vault, and Boundary Servers.
+      Client-1 contains our Go application. Client-2 hosts a Postgres Database. The Server contains the Consul, Vault, and Boundary Servers.
 
-      We will first work on authenticating our application to Vault.
+      We will first work on authenticating our application to Vault so it can retrieve a login token.
 
       <img src="https://github.com/Andrew-Klaas/instruqt-zt-lab/raw/main/assets/diagrams/0-auth.png" width=800px height=400px>
   assignment: |-
@@ -56,7 +56,7 @@ challenges:
     ```
     vault auth list
     ```
-    NOTE, the AWS auth method has already been mounted for you. You would use this command to mount it yourself.
+    NOTE: the AWS auth method has already been mounted for you. You would use this command to mount it yourself. 
     ```
     #The AWS Secret Engine has already been mounted for you. This will return a 400 error.
     vault auth enable aws
@@ -69,6 +69,7 @@ challenges:
     vault read auth/aws/config/client
     ```
     The mount's already been configured for you as well.
+
     To do so in your own environment, you need to configure the auth method with suitable AWS credentials to perform actions on IAM Users.
     Our recommended AWS IAM policy is here: https://www.vaultproject.io/docs/auth/aws#recommend
 
@@ -98,7 +99,9 @@ challenges:
     ```
     vault login -method=aws role=my-role-iam
     ```
-    So, how does our application perform this login? Vault programming libraries allow you to natively integrate your application for improved security.
+    You should see a new token created with the default and go-app policies attached.
+
+    How does our application perform this login? Vault programming libraries allow you to natively integrate your application for improved security.
 
     By having your applciation call Vault directly, you can ensure that credentials only live in memory and not on disk or envirnoment variables.
 
@@ -111,22 +114,10 @@ challenges:
   - title: Server
     type: terminal
     hostname: hashistack-server
-  - title: App UI
-    type: service
-    hostname: hashistack-client-1
-    port: 9090
   - title: Vault UI
     type: service
     hostname: hashistack-server
     port: 8200
-  - title: Consul UI
-    type: service
-    hostname: hashistack-server
-    port: 8500
-  - title: Boundary UI
-    type: service
-    hostname: hashistack-server
-    port: 9200
   - title: Client 1
     type: terminal
     hostname: hashistack-client-1
@@ -147,12 +138,11 @@ challenges:
   notes:
   - type: text
     contents: |-
-      The database secrets engine generates database credentials dynamically based on configured roles.
+      Vault's database secrets engine generates short-lived credentials dynamically based on configured roles.
 
-      This means that services that need to access a database no longer need to hardcode credentials: they can request them from Vault, and use Vault's leasing mechanism to more easily roll keys. These are referred to as "dynamic roles" or "dynamic secrets".
+      Services no longer need hardcoded or static credentials. They can request the secret from Vault, and use Vault's leasing mechanism to keep those credentials renewed or to pull new ones after expiration.  
 
-      Since every service is accessing the database with unique credentials, it makes auditing much easier when questionable data access is discovered. You can track it down to the specific instance of a service based on the SQL username.
-      Vault makes use of its own internal revocation system to ensure that users become invalid within a reasonable time of the lease expiring.
+      Since every service is accessing the database with unique credentials, this makes auditing easier when questionable data access is discovered. You can track it down to the specific instance of a service based on the SQL username.
   - type: text
     contents: |-
       In this challenge we will configure Vault to create lease priviledged Postgres credentials
@@ -168,11 +158,9 @@ challenges:
     ```
     vault secrets list
     ```
-    The PostgreSQL database secret engine has already been mounted and configure for you
-    ```
-    vault read database/config/my-postgresql-database
-    ```
-    To configure the secret engine we need to give Vault admin level credentials that enable creation and deletion of users.
+    The PostgreSQL database secret engine has already been mounted and configured for you
+
+    To configure the secret engine we need to give Vault admin level credentials that enable creation and deletion of database users.
     We also set the connection_url in this setup so Vault can locate the database.
 
     Run the following command.
@@ -184,11 +172,11 @@ challenges:
       username="postgres" \
       password="password"
     ```
-    Next we configure a secret engine role. In this step we can customize the creation_statements used by Vault for creating users.
+    Next, we configure a secret engine role. In this step we can customize the creation_statements used by Vault for creating users.
 
     Creation_statements are used to grant different permissions for users to read, write, etc. from databases.
 
-    We also set the database credential time-to-live and max time-to-live. After the TTL expires, the credential will be deleted from the database by Vault unless your applicaiton renews it.
+    We also set the database credential time-to-live and max time-to-live. After the TTL expires, the credential will be deleted from the database by Vault unless your applicaiton renews it. Credentials can be renewed up until the max-ttl expires.
     ```
     vault write database/roles/vault_go_demo \
       db_name=my-postgresql-database \
@@ -203,27 +191,15 @@ challenges:
     ```
     You should see Vault's dynamically generated username and password for PostreSQL. Every read to this secret engine will create a unique credential.
 
-    Next, let's understand how Vault can be used to encrypt customer PII data such as credit card or social security numbers.
+    Let's learn how Vault can be used to encrypt customer PII data such as credit card or social security numbers.
   tabs:
   - title: Server
     type: terminal
     hostname: hashistack-server
-  - title: App UI
-    type: service
-    hostname: hashistack-client-1
-    port: 9090
   - title: Vault UI
     type: service
     hostname: hashistack-server
     port: 8200
-  - title: Consul UI
-    type: service
-    hostname: hashistack-server
-    port: 8500
-  - title: Boundary UI
-    type: service
-    hostname: hashistack-server
-    port: 9200
   - title: Client 1
     type: terminal
     hostname: hashistack-client-1
@@ -257,14 +233,14 @@ challenges:
     vault secrets list
     ```
     We first need to configure the secret engine to use tokenization.
-    Our golang application will be leveraging tokenization to protect customer data and meet PCI compliance of non-repudiation (Non reversible).
+    Our golang application will be leveraging tokenization to protect customer data and meet PCI compliance of non-repudiation (Non reversible data).
 
     Lets configure a named role in Vault for our secret engine. We also declare a transformation of name "ssn" we will define that in the next step.
     ```
     vault write transform/role/vault_go_demo transformations=ssn
     ```
     "Transformations" contain information about the type of data transformation that we want to perform, the template that it should use for value detection, and other transformation-specific values such as the tweak source or the masking characters to use.
-    In this case we are using tokenization instead of format preserving encryption so the configuration is more simple. (No special formatting required)
+    In this case, we are using tokenization instead of format preserving encryption so the configuration is more simple. (No special formatting required)
 
     Define the transformation.
     ```
@@ -278,7 +254,7 @@ challenges:
       transform/encode/vault_go_demo value=1111-2222-3333-4444 \
       transformation=ssn \
       | jq -r '.data.encoded_value')
-    
+
     echo $ENCODED_VAULT
     ```
     Next, decode the tokenized value from above.
@@ -292,32 +268,16 @@ challenges:
   - title: Server
     type: terminal
     hostname: hashistack-server
-  - title: App UI
-    type: service
-    hostname: hashistack-client-1
-    port: 9090
   - title: Vault UI
     type: service
     hostname: hashistack-server
     port: 8200
-  - title: Consul UI
-    type: service
-    hostname: hashistack-server
-    port: 8500
-  - title: Boundary UI
-    type: service
-    hostname: hashistack-server
-    port: 9200
   - title: Client 1
     type: terminal
     hostname: hashistack-client-1
   - title: Client 2
     type: terminal
     hostname: hashistack-client-2
-  - title: Terraform Editor
-    type: code
-    hostname: hashistack-server
-    path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
 - slug: 04-test-app
@@ -332,7 +292,7 @@ challenges:
   assignment: |-
     Switch to the "Client 1" terminal and restart the application.
 
-    NOTE:Y ou may need to run this command twice due to a DNS issue.
+    NOTE: You may need to run this command twice due to a DNS issue.
     ```
     systemctl start goapp
     ```
@@ -359,14 +319,6 @@ challenges:
     type: service
     hostname: hashistack-server
     port: 8200
-  - title: Consul UI
-    type: service
-    hostname: hashistack-server
-    port: 8500
-  - title: Boundary UI
-    type: service
-    hostname: hashistack-server
-    port: 9200
   - title: Client 1
     type: terminal
     hostname: hashistack-client-1
@@ -423,10 +375,6 @@ challenges:
     type: service
     hostname: hashistack-server
     port: 8500
-  - title: Boundary UI
-    type: service
-    hostname: hashistack-server
-    port: 9200
   - title: Client 1
     type: terminal
     hostname: hashistack-client-1
@@ -444,7 +392,7 @@ challenges:
   notes:
   - type: text
     contents: |-
-      One of the major use cases for Consul is service discovery. Consul provides a DNS interface that downstream services can use to find the IP addresses of their upstream dependencies.
+      One of the major use cases for Consul is called "service discovery". Consul provides a DNS interface that downstream services can use to find the IP addresses of their upstream dependencies.
       Consul knows where these services are located because each service registers with its local Consul client.
 
       Operators can register services manually, configuration management tools can register services when they are deployed, or container orchestration platforms can register services automatically via integrations.
@@ -460,7 +408,7 @@ challenges:
     cd /etc/consul.d/
     cat consul.hcl
     ```
-    This consul agent is running in "client" mode. The configuration is used to set several options like which address to bind to, where the Consul servers are that we want to join, and other info like log levels.
+    This consul agent is running in "client" mode. The configuration is used to set several options such as which address to bind to, where the Consul servers are that we want to join, and other info like log levels.
     ```
     datacenter = "dc1"
     retry_join = ["hashistack-server"]
@@ -482,7 +430,7 @@ challenges:
     ```
     This file is used to define the name/ports of the service we want Consul to register & monitor, how to configure a sidecar proxy, health checks, etc.
 
-    We will discuss the Connect stanza in more detail in the next section.
+    We will discuss the "connect" stanza in more detail in the next section.
     ```
     service {
       name = "goapp"
@@ -550,10 +498,6 @@ challenges:
     type: service
     hostname: hashistack-server
     port: 8500
-  - title: Boundary UI
-    type: service
-    hostname: hashistack-server
-    port: 9200
   - title: Client 1
     type: terminal
     hostname: hashistack-client-1
@@ -605,10 +549,6 @@ challenges:
     type: service
     hostname: hashistack-server
     port: 8500
-  - title: Boundary UI
-    type: service
-    hostname: hashistack-server
-    port: 9200
   - title: Client 1
     type: terminal
     hostname: hashistack-client-1
@@ -712,20 +652,12 @@ challenges:
     type: service
     hostname: hashistack-server
     port: 8500
-  - title: Boundary UI
-    type: service
-    hostname: hashistack-server
-    port: 9200
   - title: Client 1
     type: terminal
     hostname: hashistack-client-1
   - title: Client 2
     type: terminal
     hostname: hashistack-client-2
-  - title: Terraform Editor
-    type: code
-    hostname: hashistack-server
-    path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
 - slug: 09-test-consul-intentions
@@ -743,7 +675,7 @@ challenges:
 
     First, let's deny access from the webapp to the database. we define the following service-intention configuration as code.
 
-    The intention will specifices that connections from the source service "goapp" will be denied to the backend "Name" postgres.
+    This intention specifices that connections from the source service "goapp" will be denied to the backend "Name" postgres.
     ```
     cat << EOF > ~/config-intentions-postgres-deny.hcl
     Kind = "service-intentions"
@@ -813,10 +745,6 @@ challenges:
     type: service
     hostname: hashistack-server
     port: 8500
-  - title: Boundary UI
-    type: service
-    hostname: hashistack-server
-    port: 9200
   - title: Client 1
     type: terminal
     hostname: hashistack-client-1
@@ -874,6 +802,10 @@ challenges:
     ```
 
     Save the "token" from the above output. You will pass this value to Terraform in the "apply" step below.
+    ```
+    #example: Save this from above. You will pass it to Terraform apply.
+    s.5DyL8vhy0AA3ke42WbWG4r5A
+    ```
 
     Initialize terraform.
     ```
@@ -929,7 +861,7 @@ challenges:
   notes:
   - type: text
     contents: |-
-      As with many other HashiCorp tools, Boundary supports CLI, API, and a GUI for interacting with the service. In this exercise you will explore the GUI and find available targets to securely access.
+      Boundary supports CLI, API, and a GUI for interacting with the service. In this exercise you will explore the GUI and find available targets to securely access.
 
       Boundaries domain model is explained in detail here -> https://www.boundaryproject.io/docs/concepts/domain-model
   assignment: |-
@@ -988,10 +920,6 @@ challenges:
   - title: Client 2
     type: terminal
     hostname: hashistack-client-2
-  - title: Terraform Editor
-    type: code
-    hostname: hashistack-server
-    path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
 - slug: 12-connect-to-database
@@ -1048,7 +976,7 @@ challenges:
     boundary connect ssh -target-id $SSH_TARGET
     ```
 
-    Congratulations! You've successfully learned out to secure application passwords, customer data, networking between services, and access to infrastructure resources!
+    Congratulations! You've successfully learned how to secure application passwords, customer data, networking between services, and access to infrastructure resources!
 
     To continue on your journey, please refer to the following docs for more information on use-cases, deployments, etc.
 
@@ -1089,4 +1017,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 600
-checksum: "12954628143443190736"
+checksum: "452267618816537145"
