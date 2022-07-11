@@ -20,7 +20,7 @@ owner: hashicorp
 developers:
 - aklaas@hashicorp.com
 private: true
-published: false
+published: true
 challenges:
 - slug: 01-vault-aws-authentication
   id: oj6ydqgrfeob
@@ -962,7 +962,8 @@ challenges:
     ```
     \l
     \du
-    quit
+    \q
+    SELECT * FROM vault_go_demo;
     ```
     you can also test SSH'ing to the database host via Boundary. Switch back to the Boundary UI and copy the "ssh_server" target.
 
@@ -1016,5 +1017,5 @@ challenges:
     hostname: hashistack-server
     path: /root/terraform-boundary/main.tf
   difficulty: basic
-  timelimit: 600
-checksum: "3582602973435691371"
+  timelimit: 20000
+checksum: "17877927453110360668"
