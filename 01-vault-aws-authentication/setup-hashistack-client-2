@@ -88,13 +88,13 @@ wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-
 apt-get -y update
 sudo apt-get -y install postgresql
 systemctl start postgresql
-sudo cat << EOF > /etc/postgresql/14/main/conf.d/postgresql.conf
+sudo cat << EOF > /etc/postgresql/15/main/conf.d/postgresql.conf
 listen_addresses '*'
 EOF
 sudo echo "
 host    all             all              0.0.0.0/0                       md5
 host    all             all              ::/0                            md5
-" >> /etc/postgresql/14/main/pg_hba.conf
+" >> /etc/postgresql/15/main/pg_hba.conf
 systemctl restart postgresql
 
 sudo -u postgres psql << EOF
