@@ -937,9 +937,14 @@ challenges:
   assignment: |-
     Login to Boundary via the CLI on the "Server" tab.
     ```
-    export BOUNDARY_TOKEN=$(boundary authenticate password -auth-method-id ampw_1234567890 -login-name admin -password "password" -keyring-type=none -format=json | jq -r '.item.attributes.token')
-    echo $BOUNDARY_TOKEN
+    #Admin password is "password"
+    boundary authenticate password -auth-method-id ampw_1234567890 -login-name admin
     ```
+    Copy the resulting token to an env variable
+    ```
+    export BOUNDARY_TOKEN=at_vmQqzJ03lB_s12m.....
+    ```
+
     If you haven't in the prior challenge, copy the postgres_server target from the corp_one org and set an environment variable.
 
     ```
@@ -948,14 +953,14 @@ challenges:
     Next authorize a session to acess Postgres. This will create an authorization token and return dynamic database credentials from Vault.
 
     ```
-    boundary targets authorize-session -id  $POSTGRES_TARGET
+    boundary targets authorize-session -id  $POSTGRES_TARGET -token env://BOUNDARY_TOKEN 
     ```
     The Boundary CLI will automatically use the above information and the returned dynamic database credentials.
     We can now connect to the database!
 
     You may need to run this twice as it can error on the first call.
     ```
-    boundary connect postgres -target-id $POSTGRES_TARGET --dbname vault_go_demo
+    boundary connect postgres -target-id $POSTGRES_TARGET --dbname vault_go_demo -token env://BOUNDARY_TOKEN 
     ```
     Test a few database commands!
     ```
@@ -973,7 +978,7 @@ challenges:
     Then connect to the host.
     You may need to run this twice as it can error on the first call.
     ```
-    boundary connect ssh -target-id $SSH_TARGET
+    boundary connect ssh -target-id $SSH_TARGET -token=env://BOUNDARY_TOKEN
     ```
 
     Congratulations! You've successfully learned how to secure application passwords, customer data, networking between services, and access to infrastructure resources!
@@ -1017,4 +1022,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 20000
-checksum: "817018570568390905"
+checksum: "3073220855708485883"
