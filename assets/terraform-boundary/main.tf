@@ -169,7 +169,7 @@ resource "boundary_target" "backend_servers_postgres" {
   scope_id                 = boundary_scope.core_infra.id
   default_port             = 5432
   session_connection_limit = -1
-  application_credential_source_ids = [
+  brokered_credential_source_ids = [
     boundary_credential_library_vault.postgres_cred_library.id
   ]
 
