@@ -953,14 +953,14 @@ challenges:
     Next authorize a session to acess Postgres. This will create an authorization token and return dynamic database credentials from Vault.
 
     ```
-    boundary targets authorize-session -id  $POSTGRES_TARGET -token env://BOUNDARY_TOKEN 
+    boundary targets authorize-session -id  $POSTGRES_TARGET -token env://BOUNDARY_TOKEN
     ```
     The Boundary CLI will automatically use the above information and the returned dynamic database credentials.
     We can now connect to the database!
 
     You may need to run this twice as it can error on the first call.
     ```
-    boundary connect postgres -target-id $POSTGRES_TARGET --dbname vault_go_demo -token env://BOUNDARY_TOKEN 
+    boundary connect postgres -target-id $POSTGRES_TARGET --dbname vault_go_demo -token env://BOUNDARY_TOKEN
     ```
     Test a few database commands!
     ```
@@ -1022,4 +1022,4 @@ challenges:
     path: /root/terraform-boundary/main.tf
   difficulty: basic
   timelimit: 20000
-checksum: "3073220855708485883"
+checksum: "15042161860804546552"
